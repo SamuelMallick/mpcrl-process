@@ -1,0 +1,222 @@
+import os
+from typing import Any
+
+import casadi as cs
+import gymnasium as gym
+import numpy as np
+from fmpy import extract, read_model_description
+from fmpy.fmi2 import FMU2Slave
+
+
+class DHSSystem(gym.Env[np.ndarray, np.ndarray]):
+    cp = 4186  # specific heat capacity of water J/(kg K)
+
+    internal_step_size = 0.01  # seconds
+
+    eta_gen = 0.84  # boiler efficiency
+    q_b_min = 2.0  # minimum boiler flow kg/s
+    q_r_min = 10  # minimum return flow kg/s
+
+    def __init__(
+        self,
+        step_size: float,
+        sim_data: dict[str, Any],
+        monitoring_data_set: np.ndarray,
+        w: float = 20.0,
+    ):
+        super().__init__()
+        self.step_size = step_size
+        self.num_internal_steps = int(self.step_size / self.internal_step_size)
+        self.time = 0.0
+
+        if {"P_loads", "elec_price", "T_s_min", "T_r_min"} > sim_data.keys():
+            raise ValueError(
+                "sim_data must contain 'P_loads', 'elec_price', 'T_s_min', and 'T_r_min' keys."
+            )
+        self.P_loads, self.elec_price, self.T_s_min, self.T_r_min = (
+            sim_data[k] for k in ["P_loads", "elec_price", "T_s_min", "T_r_min"]
+        )
+
+        # self.monitoring_distance_calculator = MahalanobisWeighting(
+        #     [monitoring_data_set],
+        #     [
+        #         (
+        #             np.std(monitoring_data_set, axis=0),
+        #             np.mean(monitoring_data_set, axis=0),
+        #         )
+        #     ],
+        # )
+
+        self.w = w
+        if os.name == "nt":
+            self.fmu_filename = "simulation_model/dhs_storage_win.fmu"
+        else:
+            self.fmu_filename = "simulation_model/dhs_storage_linux.fmu"
+
+    def reset(
+        self,
+        *,
+        seed=None,
+        options=None,
+    ) -> tuple[np.ndarray, dict[str, Any]]:
+        super().reset(seed=seed, options=options)
+        self.time = 0.0
+        self.step_counter = 0
+
+        # FMU setup
+        model_description = read_model_description(self.fmu_filename)
+        unzipdir = extract(self.fmu_filename)
+        self.fmu = FMU2Slave(
+            guid=model_description.guid,
+            unzipDirectory=unzipdir,
+            modelIdentifier=model_description.coSimulation.modelIdentifier,
+            instanceName="instance1",
+        )
+        self.fmu.instantiate()
+        self.fmu.setupExperiment(startTime=0.0)
+        self.fmu.enterInitializationMode()
+        self.fmu.exitInitializationMode()
+
+        # collect the value references for fmu variables
+        value_references = {}
+        for variable in model_description.modelVariables:
+            value_references[variable.name] = variable.valueReference
+        input_names = [
+            "mfr_stes",
+            "T_boiler_ref",
+            "P_load1",
+            "P_load2",
+            "P_load3",
+            "P_load4",
+            "P_load5",
+        ]
+        output_names = [
+            "Ts_load[1]",  # 0
+            "Tr_load[1]",  # 1
+            "mfr_load[1]",  # 2
+            "Ts_load[2]",  # 3
+            "Tr_load[2]",  # 4
+            "mfr_load[2]",  # 5
+            "Ts_load[3]",  # 6
+            "Tr_load[3]",  # 7
+            "mfr_load[3]",  # 8
+            "Ts_load[4]",  # 9
+            "Tr_load[4]",  # 10
+            "mfr_load[4]",  # 11
+            "Ts_load[5]",  # 12
+            "Tr_load[5]",  # 13
+            "mfr_load[5]",  # 14
+            "T_ret",  # 15
+            "mfr_ret",  # 16
+            "T_boiler_out",  # 17
+            "T_supply",  # 18
+            "mfr_supply",  # 19
+            "P_boiler_out",  # 20
+            "T_tes",  # 21
+            "mfr_boiler",  # 22
+            "T_boiler_in",  # 23
+        ]
+        self.inputs = [value_references[name] for name in input_names]
+        self.outputs = [value_references[name] for name in output_names]
+
+        self.y = self.fmu.getReal(self.outputs)
+        return self.y, {}
+
+    def get_stage_cost(self, output: np.ndarray) -> float:
+        P = output[20]  # boiler power
+        T_s = [output[i] for i in [0, 3, 6, 9, 12]]
+        T_r = output[15]
+        q_r = output[16]
+        elec_price = self.elec_price[self.step_counter]
+        T_s_min = self.T_s_min[self.step_counter]
+        T_r_min = self.T_r_min[self.step_counter]
+        economic_cost = (elec_price * (1 / 3600.0) * (P / 1000.0)) / self.eta_gen
+        constraint_violation_cost = np.sum(np.maximum(0, T_s_min - T_s)) + np.sum(
+            np.maximum(0, self.q_r_min - q_r) + np.maximum(0, T_r_min - T_r)
+        )
+        return (
+            economic_cost * self.step_size,
+            constraint_violation_cost * self.w * self.step_size,
+        )
+
+    def step(
+        self, action: np.ndarray
+    ) -> tuple[np.ndarray, float, bool, bool, dict[str, Any]]:
+        """Steps the system."""
+        if isinstance(action, cs.DM):
+            action = action.full()
+        if action.shape[0] == 1:  # set 0 for storage flow if not provided
+            action = np.vstack((0, action))
+        elif action.shape[0] == 3:
+            action = np.array([action[1] - action[0], action[2]])
+
+        internal_step_counter = 0
+        economic_cost, constraint_violation_cost = self.get_stage_cost(self.y)
+
+        P_loads = self.P_loads[:, [self.step_counter]]
+        elec_price = self.elec_price[self.step_counter]
+        T_s_min = self.T_s_min[self.step_counter]
+        T_r_min = self.T_r_min[self.step_counter]
+        u = np.vstack([action, P_loads])
+        self.fmu.setReal(self.inputs, list(u))
+
+        while internal_step_counter < self.num_internal_steps:
+            self.fmu.doStep(
+                currentCommunicationPoint=self.time,
+                communicationStepSize=self.internal_step_size,
+            )
+            self.time += self.internal_step_size
+
+            # at first internal step check storage flow and modify if needed
+            if internal_step_counter == 0:
+                y_new = self.fmu.getReal(self.outputs)
+                if y_new[-2] < self.q_b_min:
+                    action[0] = self.q_b_min - y_new[16]
+                    print(f"Storage flow modified to {action[0]}")
+                    u = np.vstack([action, P_loads])
+                    self.fmu.setReal(self.inputs, list(u))
+            internal_step_counter += 1
+
+        y_new = self.fmu.getReal(self.outputs)
+        info = {
+            "P_loads": P_loads,
+            "elec_price": elec_price,
+            "T_s_min": T_s_min,
+            "T_r_min": T_r_min,
+            "economic_cost": economic_cost,
+            "constraint_violation_cost": constraint_violation_cost,
+            "q_r_min": np.asarray(self.q_r_min),
+        }
+        self.step_counter += 1
+        self.y = y_new
+        return (
+            y_new,
+            0,
+            False,
+            False,
+            info,
+        )
+
+    # if self.time > 0.0:
+    #     self.efficiency.append(-np.sum(P_loads) / self.y[20])
+    #     self.r_economic.append(r_economic)
+    #     self.viols.append(viols)
+    #     self.d.append(-np.sum(P_loads))
+    #     if len(self.efficiency) > 288:
+    #         self.efficiency.pop(0)
+    #         self.r_economic.pop(0)
+    #         self.viols.pop(0)
+    #         self.d.pop(0)
+    # feature_vector = np.vstack(
+    #     (self.efficiency, self.r_economic, self.viols, self.d)
+    # )
+    # if feature_vector.shape[1] < 10:
+    #     dist = -1.0
+    # else:
+    #     X = np.hstack(
+    #         (np.mean(feature_vector, axis=1), np.var(feature_vector, axis=1))
+    #     )
+    #     dist = self.monitoring_distance_calculator.mahalanobis_distance_multi(
+    #         X, return_all=True
+    #     )[0]
+    #     dist = dist.item()
