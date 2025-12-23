@@ -50,11 +50,12 @@ def basic_plot(data: dict):
 
     ax[0].legend()
     ax[1].legend()
+    ax[2].legend()
 
     plt.show()
 
 
 if __name__ == "__main__":
-    with open("test_simulation_data.pkl", "rb") as f:
+    with open("test_mpc_data.pkl", "rb") as f:
         sample_data = pickle.load(f)
     basic_plot(sample_data)

@@ -143,8 +143,6 @@ class DHSSystem(gym.Env[np.ndarray, np.ndarray]):
         self, action: np.ndarray
     ) -> tuple[np.ndarray, float, bool, bool, dict[str, Any]]:
         """Steps the system."""
-        if isinstance(action, cs.DM):
-            action = action.full()
         if action.shape[0] == 1:  # set 0 for storage flow if not provided
             action = np.vstack((0, action))
         elif action.shape[0] == 3:

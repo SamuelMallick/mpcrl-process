@@ -37,4 +37,4 @@ for _ in range(100):
     env.step(75 * np.ones((1, 1)))
 env.force_episode_end()
 
-save_simulation_data("test_simulation_data", env)
+save_simulation_data("test_env_data", env)

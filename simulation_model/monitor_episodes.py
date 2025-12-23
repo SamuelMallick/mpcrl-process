@@ -3,6 +3,7 @@ from time import perf_counter
 from typing import Any, Deque, Optional, SupportsFloat, TypeVar
 
 import numpy as np
+import casadi as cs
 import numpy.typing as npt
 from gymnasium import Env, Wrapper, utils
 
@@ -99,6 +100,8 @@ class MonitorEpisodes(
 
         # accumulate data
         self.ep_observations.append(obs)
+        if isinstance(action, cs.DM):
+            action = action.full()
         self.ep_actions.append(
             action.reshape(
                 -1,
