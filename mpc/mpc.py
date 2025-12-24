@@ -7,7 +7,10 @@ from csnlp import Nlp
 from csnlp.multistart.multistart_nlp import ParallelMultistartNlp
 from csnlp.wrappers import Mpc
 
-from prediction_model.dynamic_model import load_data, model
+import sys, os
+
+sys.path.append(os.getcwd())
+from mpc.prediction_model.dynamic_model import load_data, model
 
 
 class DhsMpc(Mpc):

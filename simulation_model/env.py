@@ -197,6 +197,14 @@ class DHSSystem(gym.Env[np.ndarray, np.ndarray]):
             info,
         )
 
+    def get_sim_data(self, N: int) -> dict[str, np.ndarray]:
+        return {
+            "P_loads": self.P_loads[:, self.step_counter : self.step_counter + N],
+            "elec_price": self.elec_price[self.step_counter : self.step_counter + N],
+            "T_s_min": self.T_s_min[self.step_counter : self.step_counter + N],
+            "T_r_min": self.T_r_min[self.step_counter : self.step_counter + N],
+        }
+
     # if self.time > 0.0:
     #     self.efficiency.append(-np.sum(P_loads) / self.y[20])
     #     self.r_economic.append(r_economic)

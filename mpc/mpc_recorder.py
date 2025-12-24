@@ -18,11 +18,12 @@ class MpcRecorder(Wrapper[SymType]):
     def solve(self, *args: Any, **kwds: Any) -> Any:
         sol = self.nlp.solve(*args, **kwds)
         self.solver_time.append(sol.stats["t_wall_total"])
-        self.P_loads.append(kwds["pars"]["P_loads"])
+        pars_arg = kwds["pars"] if "pars" in kwds else args[0]
+        self.P_loads.append(pars_arg["P_loads"])
 
         pars = {
-            **kwds["pars"],
-            **{k: v for k, v in self.pars_init.items() if k not in kwds["pars"]},
+            **pars_arg,
+            **{k: v for k, v in self.pars_init.items() if k not in pars_arg},
         }
         o = self.f_y(T_b_s=sol.vals["T_b_s"], **pars)
         y = np.asarray(o["y"])

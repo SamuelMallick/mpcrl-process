@@ -1,8 +1,12 @@
 import pickle
 import numpy as np
 from simulation_model.monitor_episodes import MonitorEpisodes
-from mpc_recorder import MpcRecorder
-from observer.mhe_recorder import MheRecorder
+
+import sys, os
+
+sys.path.append(os.getcwd())
+from mpc.mpc_recorder import MpcRecorder
+from mpc.observer.mhe_recorder import MheRecorder
 
 
 def save_simulation_data(
