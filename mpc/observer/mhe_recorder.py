@@ -13,9 +13,17 @@ class MheRecorder(Wrapper[SymType]):
         super().__init__(nlp)
         self.y_open_loop: list[np.ndarray] = []
         self.y_estimated: list[np.ndarray] = []
+        self.action_step: list[np.ndarray] = []
+        self.P_loads_estimation_data: list[np.ndarray] = []
 
     def step(self, *args: Any, **kwds: Any) -> Any:
         y_est, y_ol = self.nlp.step(*args, **kwds)
         self.y_estimated.append(y_est.squeeze())
         self.y_open_loop.append(y_ol.squeeze())
+        self.action_step.append(np.asarray(kwds["u"]))
         return y_est, y_ol
+
+    def update_state(self, *args: Any, **kwds: Any) -> Any:
+        sol, _ = self.nlp.update_state(*args, **kwds)
+        if sol is not None:
+            self.P_loads_estimation_data.append(kwds["data"]["P_loads"])

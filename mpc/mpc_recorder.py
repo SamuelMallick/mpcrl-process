@@ -13,10 +13,12 @@ class MpcRecorder(Wrapper[SymType]):
         super().__init__(nlp)
         self.solver_time: list[float] = []
         self.y_prediction: list[dict[str, np.ndarray]] = []
+        self.P_loads: list[np.ndarray] = []
 
     def solve(self, *args: Any, **kwds: Any) -> Any:
         sol = self.nlp.solve(*args, **kwds)
         self.solver_time.append(sol.stats["t_wall_total"])
+        self.P_loads.append(kwds["pars"]["P_loads"])
 
         pars = {
             **kwds["pars"],

@@ -53,4 +53,4 @@ def mpc_output_live_plot(data: dict, plot_error: bool = False):
 if __name__ == "__main__":
     with open("test_mpc_data.pkl", "rb") as f:
         sample_data = pickle.load(f)
-    mpc_output_live_plot(sample_data, plot_error=True)
+    mpc_output_live_plot(sample_data, plot_error=False)

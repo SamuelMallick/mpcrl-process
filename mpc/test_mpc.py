@@ -55,12 +55,12 @@ mpc = MpcRecorder(
         output_scaler_path="mpc/prediction_model/output_scaler_full",
         pars_init=mpc_pars,
         num_inputs=3,
-        gamma=0.99,
+        gamma=1,
     )
 )
 mhe = MheRecorder(
     Mhe(
-        prediction_horizon=5,
+        prediction_horizon=50,
         layers_path="mpc/prediction_model/layers_full",
         input_scaler_path="mpc/prediction_model/input_scaler_full",
         output_scaler_path="mpc/prediction_model/output_scaler_full",
@@ -68,7 +68,7 @@ mhe = MheRecorder(
 )
 
 env.reset()
-for k in range(150):
+for k in range(200):
     if k > 0:
         mhe_data = {
             "P_loads": np.asarray(
@@ -81,7 +81,7 @@ for k in range(150):
                 :, :17
             ].T,
         }
-        mhe.update_state(mhe_data)
+        mhe.update_state(data=mhe_data)
     pars = {
         "x": mhe.get_x(),
         "P_loads": P_loads[:, k : k + mpc.prediction_horizon],
@@ -89,11 +89,11 @@ for k in range(150):
         "T_s_min": T_s_min[k : k + mpc.prediction_horizon],
         "T_r_min": T_r_min[k : k + mpc.prediction_horizon],
     }
-    sol = mpc.solve(pars=pars, vals0={})
+    sol = mpc.solve(pars=pars, vals0=sol.vals if k > 0 else {})
     if not sol.success:
         raise RuntimeError("MPC solver failed")
-    u = sol.vals["T_b_s"][0, 0]
-    mhe.step([u] + list(P_loads[:, k]))
+    u = sol.vals["T_b_s"][0, 0].full()
+    mhe.step(u=np.vstack((u, P_loads[:, [k]])))
     env.step(u)
 env.force_episode_end()
 

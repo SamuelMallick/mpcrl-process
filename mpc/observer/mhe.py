@@ -162,6 +162,8 @@ class Mhe(Mpc):
     def step(self, u):
         if isinstance(u, list):
             u = cs.vertcat(*u)
+        elif isinstance(u, np.ndarray):
+            u = cs.DM(u)
         o = model(
             self.x_est,
             u,
@@ -191,7 +193,7 @@ class Mhe(Mpc):
         # open loop step if not enough data for full horizon
         if data["y"].shape[1] < self.prediction_horizon:
             self.step([data["T_s"][:, -1]] + data["P_loads"][:, -1].tolist())
-            return self.x_est
+            return None, self.x_est
 
         data["x_0"] = self.x_0
         for k, v in self.model_pars.items():
@@ -202,7 +204,7 @@ class Mhe(Mpc):
             self.x_0 = sol.vals["x"][:, 1]  # shifted by 1 for next iteration
         else:
             raise ValueError("MHE infeasible!")
-        return sol
+        return sol, self.x_est
 
     def get_x(self):
         if self.open_loop:

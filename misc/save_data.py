@@ -22,10 +22,13 @@ def save_simulation_data(
     if mpc is not None:
         data["mpc_solver_time"] = np.asarray(mpc.solver_time)
         data["mpc_y_prediction"] = mpc.y_prediction
+        data["mpc_P_loads"] = np.asarray(mpc.P_loads)
 
     if mhe is not None:
         data["mhe_y_open_loop"] = np.asarray(mhe.y_open_loop)
         data["mhe_y_estimated"] = np.asarray(mhe.y_estimated)
+        data["mhe_action_step"] = np.asarray(mhe.action_step)
+        data["mhe_P_loads_estimation_data"] = np.asarray(mhe.P_loads_estimation_data)
 
     with open(f"{save_name}.pkl", "wb") as f:
         pickle.dump(data, f)
