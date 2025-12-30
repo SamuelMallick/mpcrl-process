@@ -1,3 +1,4 @@
+import os
 import sys
 import importlib
 import numpy as np
@@ -19,7 +20,7 @@ if len(sys.argv) > 1:
     mod = importlib.import_module(f"learning_configs.{config_file}")
     config = mod.Config()
 else:
-    from config_files.C1 import Config  # type: ignore
+    from config_files.generate_data import Config  # type: ignore
 
     config = Config()
 
@@ -33,7 +34,8 @@ env = MonitorEpisodes(
                 "T_s_min": config.T_s_min,
                 "T_r_min": config.T_r_min,
             },
-            monitoring_data_set=np.zeros((1, 10)),
+            monitoring_data_set=config.monitoring_data_set,
+            monitoring_window=config.monitoring_window,
         ),
         max_episode_steps=config.sim_len,
     )
@@ -60,10 +62,17 @@ mhe = MheRecorder(
     )
 )
 
-agent = DhsAgent(mpc=mpc, observer=mhe, fixed_parameters={})
-
-agent.evaluate(env=env, episodes=1, seed=1, raises=True)
-
 now = datetime.now()
 s = now.strftime("%Y-%m-%d_%H-%M")
-save_simulation_data(f"{config.id}_{s}", env, mpc, mhe)
+os.makedirs(f"results/{config.id}", exist_ok=True)
+agent = DhsAgent(
+    mpc=mpc,
+    observer=mhe,
+    fixed_parameters={},
+    save_frequency=72,
+    save_location=f"results/{config.id}/{s}",
+)
+
+
+agent.evaluate(env=env, episodes=1, seed=1, raises=True)
+save_simulation_data(f"results/{config.id}/{s}", env, mpc, mhe)

@@ -14,14 +14,24 @@ def save_simulation_data(
     env: MonitorEpisodes,
     mpc: MpcRecorder | None = None,
     mhe: MheRecorder | None = None,
+    episode_in_progress: bool = False,
 ) -> None:
-    data = {
-        "u": np.asarray(env.actions),
-        "y": np.asarray(env.observations),
-        "rewards": np.asarray(env.rewards),
-    }
-    for key, values in env.extra_data.items():
-        data[key] = np.asarray(values)
+    if episode_in_progress:
+        data = {
+            "u": np.asarray(env.ep_actions)[None, :, :],
+            "y": np.asarray(env.ep_observations)[None, :, :],
+            "rewards": np.asarray(env.ep_rewards)[None, :],
+        }
+        for key, values in env.ep_extra_data.items():
+            data[key] = np.asarray(values)[None, :, :]
+    else:
+        data = {
+            "u": np.asarray(env.actions),
+            "y": np.asarray(env.observations),
+            "rewards": np.asarray(env.rewards),
+        }
+        for key, values in env.extra_data.items():
+            data[key] = np.asarray(values)
 
     if mpc is not None:
         data["mpc_solver_time"] = np.asarray(mpc.solver_time)

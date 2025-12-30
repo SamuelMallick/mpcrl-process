@@ -1,11 +1,12 @@
 import os
 from typing import Any
 
-import casadi as cs
 import gymnasium as gym
 import numpy as np
 from fmpy import extract, read_model_description
 from fmpy.fmi2 import FMU2Slave
+
+from monitoring.mahalanobis_distance import MahalanobisDistance
 
 
 class DHSSystem(gym.Env[np.ndarray, np.ndarray]):
@@ -21,7 +22,8 @@ class DHSSystem(gym.Env[np.ndarray, np.ndarray]):
         self,
         step_size: float,
         sim_data: dict[str, Any],
-        monitoring_data_set: np.ndarray,
+        monitoring_data_set: np.ndarray | None,
+        monitoring_window: int,
         w: float = 20.0,
     ):
         super().__init__()
@@ -37,15 +39,20 @@ class DHSSystem(gym.Env[np.ndarray, np.ndarray]):
             sim_data[k] for k in ["P_loads", "elec_price", "T_s_min", "T_r_min"]
         )
 
-        # self.monitoring_distance_calculator = MahalanobisWeighting(
-        #     [monitoring_data_set],
-        #     [
-        #         (
-        #             np.std(monitoring_data_set, axis=0),
-        #             np.mean(monitoring_data_set, axis=0),
-        #         )
-        #     ],
-        # )
+        if monitoring_data_set is None:
+            self.monitoring_distance_calculator = None
+        else:
+            self.monitoring_distance_calculator = MahalanobisDistance(
+                [monitoring_data_set],
+                [
+                    (
+                        np.std(monitoring_data_set, axis=0),
+                        np.mean(monitoring_data_set, axis=0),
+                    )
+                ],
+            )
+        self.monitoring_window = monitoring_window
+        self.observed_data = None
 
         self.w = w
         if os.name == "nt":
@@ -122,7 +129,7 @@ class DHSSystem(gym.Env[np.ndarray, np.ndarray]):
         self.y = self.fmu.getReal(self.outputs)
         return self.y, {}
 
-    def get_stage_cost(self, output: np.ndarray) -> float:
+    def get_costs(self, output: np.ndarray) -> float:
         P = output[20]  # boiler power
         T_s = [output[i] for i in [0, 3, 6, 9, 12]]
         T_r = output[15]
@@ -151,12 +158,26 @@ class DHSSystem(gym.Env[np.ndarray, np.ndarray]):
             action = np.array([action[1] - action[0], action[2]])
 
         internal_step_counter = 0
-        economic_cost, constraint_violation_cost = self.get_stage_cost(self.y)
+        economic_cost, constraint_violation_cost = self.get_costs(self.y)
+
+        if self.monitoring_distance_calculator is not None:
+            if self.observed_data is not None:
+                dist = self.monitoring_distance_calculator.mahalanobis_distance(
+                    self.observed_data, return_all=True
+                )
+                r = dist[0].item()
+                self.observed_data = None
+            else:
+                r = 0.0
+        else:
+            r = 0.0
 
         P_loads = self.P_loads[:, [self.step_counter]]
         elec_price = self.elec_price[self.step_counter]
         T_s_min = self.T_s_min[self.step_counter]
         T_r_min = self.T_r_min[self.step_counter]
+        efficiency = -np.sum(P_loads) / self.y[20]
+
         u = np.vstack([action, P_loads])
         self.fmu.setReal(self.inputs, list(u))
 
@@ -186,12 +207,13 @@ class DHSSystem(gym.Env[np.ndarray, np.ndarray]):
             "economic_cost": economic_cost,
             "constraint_violation_cost": constraint_violation_cost,
             "q_r_min": np.asarray(self.q_r_min),
+            "efficiency": efficiency,
         }
         self.step_counter += 1
         self.y = y_new
         return (
             y_new,
-            0,
+            r,
             False,
             False,
             info,
@@ -204,6 +226,36 @@ class DHSSystem(gym.Env[np.ndarray, np.ndarray]):
             "T_s_min": self.T_s_min[self.step_counter : self.step_counter + N],
             "T_r_min": self.T_r_min[self.step_counter : self.step_counter + N],
         }
+
+    def set_observed_data(self, observed_data: dict[str, np.ndarray]) -> None:
+        if len(observed_data["P_loads"]) < self.monitoring_window:
+            self.observed_data = None
+        else:
+            data = np.hstack(
+                [
+                    np.asarray(observed_data[key])[:, -self.monitoring_window :]
+                    for key in [
+                        "efficiency",
+                        "economic_cost",
+                        "constraint_violation_cost",
+                    ]
+                ]
+            )
+            data = np.hstack(
+                (
+                    data,
+                    -np.sum(
+                        np.asarray(observed_data["P_loads"])[
+                            :, -self.monitoring_window :
+                        ],
+                        axis=1,
+                        keepdims=True,
+                    ),
+                )
+            )
+            self.observed_data = np.hstack(
+                (np.mean(data, axis=0), np.var(data, axis=0))
+            )
 
     # if self.time > 0.0:
     #     self.efficiency.append(-np.sum(P_loads) / self.y[20])

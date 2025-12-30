@@ -1,6 +1,7 @@
 import pickle
 import numpy as np
 
+
 class BaseConfig:
     id = "base"
 
@@ -8,17 +9,12 @@ class BaseConfig:
     sim_len = 288 * 200
     ts = 5.0 * 60
     w = 20.0
+    with open("monitoring/monitoring_data_set.pkl", "rb") as f:
+        monitoring_data_set = pickle.load(f)
+    monitoring_window = 288
 
     # simulation data
     loads_folder = "simulation_data/loads_5"
-    with open(f"{loads_folder}/loads_min.pkl", "rb") as f:
-        P_loads = pickle.load(f)
-    with open(f"{loads_folder}/elec_price.pkl", "rb") as f:
-        elec_price = pickle.load(f)
-    with open(f"{loads_folder}/limits.pkl", "rb") as f:
-        data = pickle.load(f)
-        T_s_min = data["Ts_min"]
-        T_r_min = data["Tr_min"]
 
     # mpc
     layers_path = "mpc/prediction_model/layers_full.mat"
@@ -43,3 +39,38 @@ class BaseConfig:
         "T_lim_off": np.zeros((5,)),
         "q_lim_off": np.zeros((1,)),
     }
+
+    def __init__(self):
+        self.P_loads, self.elec_price, self.T_s_min, self.T_r_min = (
+            self.generate_sim_data(self.sim_len, self.loads_folder)
+        )
+
+    def generate_sim_data(self, sim_len, loads_folder):
+        with open(f"{loads_folder}/loads_min.pkl", "rb") as f:
+            P_loads = pickle.load(f)
+            num_repeats = int(np.ceil(sim_len / max(P_loads.shape)))
+            P_loads = np.tile(P_loads, (1, num_repeats))
+            P_loads = np.hstack(
+                [P_loads, P_loads[:, -1][:, None].repeat(self.N + 10, axis=1)]
+            )  # pad for N steps
+        with open(f"{loads_folder}/elec_price.pkl", "rb") as f:
+            elec_price = pickle.load(f)
+            num_repeats = int(np.ceil(sim_len / max(elec_price.shape)))
+            elec_price = np.tile(elec_price, (1, num_repeats))
+            elec_price = np.hstack(
+                [elec_price, elec_price[:, -1] * np.ones((1, self.N + 10))]
+            ).squeeze()  # pad for N steps
+        with open(f"{loads_folder}/limits.pkl", "rb") as f:
+            data = pickle.load(f)
+            T_s_min = data["Ts_min"]
+            T_r_min = data["Tr_min"]
+            num_repeats = int(np.ceil(sim_len / max(T_s_min.shape)))
+            T_s_min = np.tile(T_s_min, (1, num_repeats))
+            T_r_min = np.tile(T_r_min, (1, num_repeats))
+            T_s_min = np.hstack(
+                [T_s_min, T_s_min[:, -1] * np.ones((1, self.N + 10))]
+            ).squeeze()  # pad for N steps
+            T_r_min = np.hstack(
+                [T_r_min, T_r_min[:, -1] * np.ones((1, self.N + 10))]
+            ).squeeze()  # pad for N steps
+        return P_loads, elec_price, T_s_min, T_r_min

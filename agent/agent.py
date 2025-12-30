@@ -2,7 +2,7 @@ from mpcrl import LstdQLearningAgent, Agent
 import numpy as np
 import sys, os
 
-sys.path.append(os.getcwd())
+from misc.save_data import save_simulation_data
 from mpc.observer.mhe import Mhe
 from simulation_model.env import DHSSystem
 
@@ -14,9 +14,13 @@ class DhsAgent(Agent):
         self,
         *args,
         observer: Mhe,
+        save_frequency: int = 0,
+        save_location: str = "",
         **kwargs,
     ):
         self.observer = observer
+        self.save_frequency = save_frequency
+        self.save_location = save_location
         super().__init__(*args, **kwargs)
 
     def on_episode_start(self, env: DHSSystem, episode, state):
@@ -32,6 +36,15 @@ class DhsAgent(Agent):
 
     def on_env_step(self, env: DHSSystem, episode, timestep):
         self.time_step += 1
+
+        if self.time_step % self.save_frequency == 0 and self.save_frequency > 0:
+            save_simulation_data(
+                f"{self.save_location}_step{self.time_step}",
+                env,
+                self.V,
+                self.observer,
+                episode_in_progress=True,
+            )
 
         # handle observer update
         if env.ep_observations:

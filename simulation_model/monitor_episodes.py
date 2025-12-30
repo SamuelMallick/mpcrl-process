@@ -96,6 +96,9 @@ class MonitorEpisodes(
     def step(
         self, action: ActType
     ) -> tuple[ObsType, SupportsFloat, bool, bool, dict[str, Any]]:
+        self.unwrapped.set_observed_data(
+            {**self.ep_extra_data, "y": self.ep_observations}
+        )
         obs, reward, terminated, truncated, info = super().step(action)
 
         # accumulate data

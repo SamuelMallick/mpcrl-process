@@ -1,3 +1,5 @@
+import importlib
+import sys
 import numpy as np
 import matplotlib.pyplot as plt
 import pickle
@@ -52,10 +54,20 @@ def basic_plot(data: dict):
     ax[1].legend()
     ax[2].legend()
 
+    # costs plot
+    r = data["rewards"]
+    _, ax = plt.subplots(2, 1, sharex=True)
+    ax[0].plot(r.T, label="Reward")
+
     plt.show()
 
 
 if __name__ == "__main__":
-    with open("base_2025-12-25_15-00.pkl", "rb") as f:
-        sample_data = pickle.load(f)
+    if len(sys.argv) > 1:
+        file_name = sys.argv[1]
+        with open(file_name, "rb") as f:
+            sample_data = pickle.load(f)
+    else:
+        with open("test_agent_data.pkl", "rb") as f:
+            sample_data = pickle.load(f)
     basic_plot(sample_data)
