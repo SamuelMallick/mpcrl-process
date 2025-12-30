@@ -56,6 +56,6 @@ def basic_plot(data: dict):
 
 
 if __name__ == "__main__":
-    with open("test_agent_data.pkl", "rb") as f:
+    with open("base_2025-12-25_15-00.pkl", "rb") as f:
         sample_data = pickle.load(f)
     basic_plot(sample_data)

@@ -32,6 +32,6 @@ def simulation_data_plot(data: dict):
 
 
 if __name__ == "__main__":
-    with open("test_mpc_data.pkl", "rb") as f:
+    with open("test_agent_data.pkl", "rb") as f:
         sample_data = pickle.load(f)
     simulation_data_plot(sample_data)

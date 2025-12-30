@@ -44,13 +44,13 @@ def mpc_output_live_plot(data: dict, plot_error: bool = False):
         return line_y, line_y_prediction, line_y_open_loop, line_y_estimated
 
     ani = FuncAnimation(
-        fig, update, frames=num_points, interval=100, blit=True, repeat=True
+        fig, update, frames=num_points, interval=100, blit=True, repeat=False
     )
     plt.tight_layout()
     plt.show()
 
 
 if __name__ == "__main__":
-    with open("test_mpc_data.pkl", "rb") as f:
+    with open("base_2025-12-25_15-00.pkl", "rb") as f:
         sample_data = pickle.load(f)
     mpc_output_live_plot(sample_data, plot_error=False)

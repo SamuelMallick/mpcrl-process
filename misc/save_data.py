@@ -36,3 +36,5 @@ def save_simulation_data(
 
     with open(f"{save_name}.pkl", "wb") as f:
         pickle.dump(data, f)
+
+    print(f"saved simulation data to {save_name}.pkl")
