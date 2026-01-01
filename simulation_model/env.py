@@ -233,7 +233,7 @@ class DHSSystem(gym.Env[np.ndarray, np.ndarray]):
         else:
             data = np.hstack(
                 [
-                    np.asarray(observed_data[key])[:, -self.monitoring_window :]
+                    np.asarray(observed_data[key])[-self.monitoring_window :]
                     for key in [
                         "efficiency",
                         "economic_cost",
@@ -246,7 +246,7 @@ class DHSSystem(gym.Env[np.ndarray, np.ndarray]):
                     data,
                     -np.sum(
                         np.asarray(observed_data["P_loads"])[
-                            :, -self.monitoring_window :
+                            -self.monitoring_window :, :
                         ],
                         axis=1,
                         keepdims=True,
@@ -256,27 +256,3 @@ class DHSSystem(gym.Env[np.ndarray, np.ndarray]):
             self.observed_data = np.hstack(
                 (np.mean(data, axis=0), np.var(data, axis=0))
             )
-
-    # if self.time > 0.0:
-    #     self.efficiency.append(-np.sum(P_loads) / self.y[20])
-    #     self.r_economic.append(r_economic)
-    #     self.viols.append(viols)
-    #     self.d.append(-np.sum(P_loads))
-    #     if len(self.efficiency) > 288:
-    #         self.efficiency.pop(0)
-    #         self.r_economic.pop(0)
-    #         self.viols.pop(0)
-    #         self.d.pop(0)
-    # feature_vector = np.vstack(
-    #     (self.efficiency, self.r_economic, self.viols, self.d)
-    # )
-    # if feature_vector.shape[1] < 10:
-    #     dist = -1.0
-    # else:
-    #     X = np.hstack(
-    #         (np.mean(feature_vector, axis=1), np.var(feature_vector, axis=1))
-    #     )
-    #     dist = self.monitoring_distance_calculator.mahalanobis_distance_multi(
-    #         X, return_all=True
-    #     )[0]
-    #     dist = dist.item()
