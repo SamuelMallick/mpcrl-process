@@ -3,6 +3,7 @@ import sys
 
 import numpy as np
 from mpcrl import Agent, LstdDpgAgent, LstdQLearningAgent
+from mpcrl.wrappers.agents import RecordUpdates
 
 from misc.save_data import save_simulation_data
 from mpc.observer.mhe import Mhe
@@ -16,14 +17,29 @@ class DhsAgent(Agent):
         self,
         *args,
         observer: Mhe,
-        save_frequency: int = 0,
-        save_location: str = "",
         **kwargs,
     ):
         self.observer = observer
+        self.save_frequency = 0
+        self.save_location = ""
+        super().__init__(*args, **kwargs)
+
+    def evaluate(
+        self,
+        env,
+        episodes,
+        deterministic=True,
+        seed=None,
+        raises=True,
+        env_reset_options=None,
+        save_frequency: int = 0,
+        save_location: str = "",
+    ):
         self.save_frequency = save_frequency
         self.save_location = save_location
-        super().__init__(*args, **kwargs)
+        return super().evaluate(
+            env, episodes, deterministic, seed, raises, env_reset_options
+        )
 
     def on_episode_start(self, env: DHSSystem, episode, state):
         env = env.unwrapped  # TODO is there a more elegant solution?
@@ -45,6 +61,7 @@ class DhsAgent(Agent):
                 env,
                 self.V,
                 self.observer,
+                self,
                 episode_in_progress=True,
             )
 
@@ -95,14 +112,29 @@ class DhsDpgAgent(DhsAgent, LstdDpgAgent):
         self,
         *args,
         observer: Mhe,
-        save_frequency: int = 0,
-        save_location: str = "",
         **kwargs,
     ):
         self.observer = observer
+        self.save_frequency = 0
+        self.save_location = ""
+        self.update_recorder = None
+        LstdDpgAgent.__init__(self, *args, **kwargs)
+
+    def train(
+        self,
+        env,
+        episodes,
+        seed=None,
+        raises=True,
+        env_reset_options=None,
+        save_frequency: int = 0,
+        save_location: str = "",
+        update_recorder: RecordUpdates | None = None,
+    ):
+        self.update_recorder = update_recorder
         self.save_frequency = save_frequency
         self.save_location = save_location
-        LstdDpgAgent.__init__(self, *args, **kwargs)
+        return super().train(env, episodes, seed, raises, env_reset_options)
 
 
 class DhsQLearningAgent(DhsAgent, LstdQLearningAgent):
@@ -111,11 +143,26 @@ class DhsQLearningAgent(DhsAgent, LstdQLearningAgent):
         self,
         *args,
         observer: Mhe,
-        save_frequency: int = 0,
-        save_location: str = "",
         **kwargs,
     ):
         self.observer = observer
+        self.save_frequency = 0
+        self.save_location = ""
+        self.update_recorder = None
+        LstdQLearningAgent.__init__(self, *args, **kwargs)
+
+    def train(
+        self,
+        env,
+        episodes,
+        seed=None,
+        raises=True,
+        env_reset_options=None,
+        save_frequency: int = 0,
+        save_location: str = "",
+        update_recorder: RecordUpdates | None = None,
+    ):
+        self.update_recorder = update_recorder
         self.save_frequency = save_frequency
         self.save_location = save_location
-        LstdQLearningAgent.__init__(self, *args, **kwargs)
+        return super().train(env, episodes, seed, raises, env_reset_options)

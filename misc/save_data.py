@@ -4,11 +4,9 @@ import sys
 
 import numpy as np
 
-from simulation_model.monitor_episodes import MonitorEpisodes
-
-sys.path.append(os.getcwd())
 from mpc.mpc_recorder import MpcRecorder
 from mpc.observer.mhe_recorder import MheRecorder
+from simulation_model.monitor_episodes import MonitorEpisodes
 
 
 def save_simulation_data(
@@ -16,6 +14,7 @@ def save_simulation_data(
     env: MonitorEpisodes,
     mpc: MpcRecorder | None = None,
     mhe: MheRecorder | None = None,
+    agent: object | None = None,
     episode_in_progress: bool = False,
 ) -> None:
     if episode_in_progress:
@@ -45,6 +44,10 @@ def save_simulation_data(
         data["mhe_y_estimated"] = np.asarray(mhe.y_estimated)
         data["mhe_action_step"] = np.asarray(mhe.action_step)
         data["mhe_P_loads_estimation_data"] = np.asarray(mhe.P_loads_estimation_data)
+
+    if agent is not None:
+        if agent.update_recorder is not None:
+            data["agent_updates_history"] = agent.update_recorder.updates_history
 
     with open(f"{save_name}.pkl", "wb") as f:
         pickle.dump(data, f)

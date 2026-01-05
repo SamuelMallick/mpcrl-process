@@ -1,4 +1,5 @@
 import importlib
+import logging
 import os
 import sys
 from datetime import datetime
@@ -7,6 +8,7 @@ import casadi as cs
 import numpy as np
 from gymnasium.wrappers import TimeLimit
 from mpcrl import LearnableParameter, LearnableParametersDict
+from mpcrl.wrappers.agents import Log, RecordUpdates
 
 from agent.agent import DhsAgent, DhsDpgAgent, DhsQLearningAgent
 from misc.save_data import save_simulation_data
@@ -70,14 +72,23 @@ now = datetime.now()
 s = now.strftime("%Y-%m-%d_%H-%M")
 os.makedirs(f"results/{config.id}", exist_ok=True)
 if config.learning_rate == 0:
-    agent = DhsAgent(
-        mpc=mpc,
-        observer=mhe,
-        fixed_parameters={},
+    agent = Log(
+        DhsAgent(
+            mpc=mpc,
+            observer=mhe,
+            fixed_parameters={},
+        ),
+        level=logging.DEBUG,
+        log_frequencies={"on_env_step": 1},
+    )
+    agent.evaluate(
+        env=env,
+        episodes=1,
+        seed=1,
+        raises=True,
         save_frequency=288,
         save_location=f"results/{config.id}/{s}",
     )
-    agent.evaluate(env=env, episodes=1, seed=1, raises=True)
 else:
     learnable_pars_init = {
         name: config.mpc_pars[name] for name in config.learnable_pars
@@ -100,8 +111,6 @@ else:
             exploration=config.exploration,
             rollout_length=config.rollout_length,
             fixed_parameters={},
-            save_frequency=288,
-            save_location=f"results/{config.id}/{s}",
         )
     else:
         agent = DhsQLearningAgent(
@@ -114,8 +123,17 @@ else:
             experience=config.experience,
             exploration=config.exploration,
             fixed_parameters={},
-            save_frequency=288,
-            save_location=f"results/{config.id}/{s}",
         )
-    agent.train(env=env, episodes=1, seed=1, raises=True)
-save_simulation_data(f"results/{config.id}/{s}", env, mpc, mhe)
+    agent = Log(
+        RecordUpdates(agent), level=logging.DEBUG, log_frequencies={"on_env_step": 1}
+    )
+    agent.train(
+        env=env,
+        episodes=1,
+        seed=1,
+        raises=True,
+        save_frequency=288,
+        save_location=f"results/{config.id}/{s}",
+        update_recorder=agent,
+    )
+save_simulation_data(f"results/{config.id}/{s}", env, mpc, mhe, agent)
