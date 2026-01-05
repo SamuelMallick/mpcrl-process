@@ -39,6 +39,7 @@ env = MonitorEpisodes(
             },
             monitoring_data_set=config.monitoring_data_set,
             monitoring_window=config.monitoring_window,
+            w=config.w,
         ),
         max_episode_steps=config.sim_len,
     )

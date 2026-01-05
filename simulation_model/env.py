@@ -117,11 +117,11 @@ class DHSSystem(gym.Env[np.ndarray, np.ndarray]):
             "mfr_ret",  # 16
             "T_boiler_out",  # 17
             "T_supply",  # 18
-            "mfr_supply",  # 19
-            "P_boiler_out",  # 20
-            "T_tes",  # 21
-            "mfr_boiler",  # 22
-            "T_boiler_in",  # 23
+            "P_boiler_out",  # 19
+            # "mfr_supply",  # 20
+            # "T_tes",  # 21
+            # "mfr_boiler",  # 22
+            # "T_boiler_in",  # 23
         ]
         self.inputs = [value_references[name] for name in input_names]
         self.outputs = [value_references[name] for name in output_names]
@@ -130,7 +130,7 @@ class DHSSystem(gym.Env[np.ndarray, np.ndarray]):
         return np.asarray(self.y), {}
 
     def get_costs(self, output: np.ndarray) -> float:
-        P = output[20]  # boiler power
+        P = output[19]  # boiler power
         T_s = [output[i] for i in [0, 3, 6, 9, 12]]
         T_r = output[15]
         q_r = output[16]
@@ -176,7 +176,7 @@ class DHSSystem(gym.Env[np.ndarray, np.ndarray]):
         elec_price = self.elec_price[self.step_counter]
         T_s_min = self.T_s_min[self.step_counter]
         T_r_min = self.T_r_min[self.step_counter]
-        efficiency = -np.sum(P_loads) / self.y[20]
+        efficiency = -np.sum(P_loads) / self.y[19]
 
         u = np.vstack([action, P_loads])
         self.fmu.setReal(self.inputs, list(u))

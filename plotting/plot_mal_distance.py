@@ -33,7 +33,7 @@ def plot_mal_distance(data: dict):
     economic_cost = data["economic_cost"][ep, skip_first:]
 
     # efficiency
-    eff = -np.sum(P_loads, axis=1, keepdims=True) / y[:, [20]]
+    eff = -np.sum(P_loads, axis=1, keepdims=True) / y[:, [19]]
 
     # constraint violations
     violation_cost = data["constraint_violation_cost"][ep, skip_first:]

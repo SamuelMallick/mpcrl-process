@@ -80,7 +80,7 @@ class DhsMpc(Mpc):
             output_scaler_path,
         )
         y = o[0]
-        self._initial_states["y0"] = self.parameter("y0", (24,))
+        self._initial_states["y0"] = self.parameter("y0", (20,))
         T_i_s = y[:5, :]
         T_r = y[5, :]
         q_r = y[6, :]
