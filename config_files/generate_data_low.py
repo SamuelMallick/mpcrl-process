@@ -1,6 +1,7 @@
-from config_files.base import BaseConfig
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
+
+from config_files.base import BaseConfig
 
 
 class Config(BaseConfig):

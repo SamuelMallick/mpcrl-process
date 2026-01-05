@@ -1,6 +1,7 @@
-import sys
-import matplotlib.pyplot as plt
 import pickle
+import sys
+
+import matplotlib.pyplot as plt
 
 
 def basic_plot(data: dict):

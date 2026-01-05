@@ -1,7 +1,8 @@
 from mpcrl import ExperienceReplay, UpdateStrategy
-from mpcrl.optim import NewtonMethod
 from mpcrl.core.exploration import EpsilonGreedyExploration
 from mpcrl.core.schedulers import ExponentialScheduler
+from mpcrl.optim import NewtonMethod
+
 from config_files.base import BaseConfig
 
 
@@ -15,6 +16,7 @@ class Config(BaseConfig):
         self.output_scaler_path = "mpc/prediction_model/output_scaler_low.mat"
 
         # learning
+        self.ddpg = True
         self.learning_rate = 5e-3
         self.update_strategy = UpdateStrategy(288, hook="on_timestep_end", skip_first=1)
         self.optimizer = NewtonMethod(learning_rate=5e-3)

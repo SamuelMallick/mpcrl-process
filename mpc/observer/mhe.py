@@ -1,8 +1,10 @@
+import os
+import sys
+
 import casadi as cs
 import numpy as np
 from csnlp import Nlp
 from csnlp.wrappers import Mpc
-import sys, os
 
 sys.path.append(os.getcwd())
 from mpc.prediction_model.dynamic_model import load_data, model

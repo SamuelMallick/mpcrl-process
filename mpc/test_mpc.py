@@ -1,16 +1,18 @@
+import os
 import pickle
-import numpy as np
-import sys, os
+import sys
 
-from mpc import DhsMpc
+import numpy as np
+from mpc_recorder import MpcRecorder
 from observer.mhe import Mhe
 from observer.mhe_recorder import MheRecorder
-from mpc_recorder import MpcRecorder
+
+from mpc import DhsMpc
 
 sys.path.append(os.getcwd())
+from misc.save_data import save_simulation_data
 from simulation_model.env import DHSSystem
 from simulation_model.monitor_episodes import MonitorEpisodes
-from misc.save_data import save_simulation_data
 
 # get simulation data
 loads_folder = "simulation_data/loads_5"

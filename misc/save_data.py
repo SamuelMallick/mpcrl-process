@@ -1,8 +1,10 @@
+import os
 import pickle
-import numpy as np
-from simulation_model.monitor_episodes import MonitorEpisodes
+import sys
 
-import sys, os
+import numpy as np
+
+from simulation_model.monitor_episodes import MonitorEpisodes
 
 sys.path.append(os.getcwd())
 from mpc.mpc_recorder import MpcRecorder

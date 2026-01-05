@@ -1,21 +1,21 @@
+import importlib
 import os
 import sys
-import importlib
-from gymnasium.wrappers import TimeLimit
 from datetime import datetime
+
 import casadi as cs
 import numpy as np
-
+from gymnasium.wrappers import TimeLimit
 from mpcrl import LearnableParameter, LearnableParametersDict
 
 from agent.agent import DhsAgent, DhsDpgAgent, DhsQLearningAgent
-from simulation_model.env import DHSSystem
-from mpc.mpc import DhsMpc
-from simulation_model.monitor_episodes import MonitorEpisodes
 from misc.save_data import save_simulation_data
+from mpc.mpc import DhsMpc
+from mpc.mpc_recorder import MpcRecorder
 from mpc.observer.mhe import Mhe
 from mpc.observer.mhe_recorder import MheRecorder
-from mpc.mpc_recorder import MpcRecorder
+from simulation_model.env import DHSSystem
+from simulation_model.monitor_episodes import MonitorEpisodes
 
 # if a config file passed on command line, otherwise use default config file
 if len(sys.argv) > 1:
@@ -39,6 +39,7 @@ env = MonitorEpisodes(
             },
             monitoring_data_set=config.monitoring_data_set,
             monitoring_window=config.monitoring_window,
+            w=config.w,
         ),
         max_episode_steps=config.sim_len,
     )

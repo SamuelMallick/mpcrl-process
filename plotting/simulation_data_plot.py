@@ -1,6 +1,7 @@
-import numpy as np
-import matplotlib.pyplot as plt
 import pickle
+
+import matplotlib.pyplot as plt
+import numpy as np
 
 
 def simulation_data_plot(data: dict):
