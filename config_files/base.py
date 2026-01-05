@@ -40,6 +40,11 @@ class BaseConfig:
         "q_lim_off": np.zeros((1,)),
     }
 
+    # learning
+    learning_rate = 0
+    learnable_pars = []
+    ddpg = False
+
     def __init__(self):
         self.P_loads, self.elec_price, self.T_s_min, self.T_r_min = (
             self.generate_sim_data(self.sim_len, self.loads_folder)

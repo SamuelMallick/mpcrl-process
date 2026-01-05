@@ -9,6 +9,10 @@ class Config(BaseConfig):
         super().__init__()
         self.id = "generate_data"
 
+        self.layers_path = "mpc/prediction_model/layers_low.mat"
+        self.input_scaler_path = "mpc/prediction_model/input_scaler_low.mat"
+        self.output_scaler_path = "mpc/prediction_model/output_scaler_low.mat"
+
         self.sim_len = 288 * 200
 
         self.P_loads, self.elec_price, self.T_s_min, self.T_r_min = (

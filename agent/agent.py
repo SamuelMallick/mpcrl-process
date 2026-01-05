@@ -1,4 +1,4 @@
-from mpcrl import LstdQLearningAgent, Agent
+from mpcrl import Agent, LstdDpgAgent, LstdQLearningAgent
 import numpy as np
 import sys, os
 
@@ -85,3 +85,35 @@ class DhsAgent(Agent):
             np.vstack((action.full(), self.fixed_parameters["P_loads"][:, [0]]))
         )
         return action, sol
+
+
+class DhsDpgAgent(DhsAgent, LstdDpgAgent):
+
+    def __init__(
+        self,
+        *args,
+        observer: Mhe,
+        save_frequency: int = 0,
+        save_location: str = "",
+        **kwargs,
+    ):
+        self.observer = observer
+        self.save_frequency = save_frequency
+        self.save_location = save_location
+        LstdDpgAgent.__init__(self, *args, **kwargs)
+
+
+class DhsQLearningAgent(DhsAgent, LstdQLearningAgent):
+
+    def __init__(
+        self,
+        *args,
+        observer: Mhe,
+        save_frequency: int = 0,
+        save_location: str = "",
+        **kwargs,
+    ):
+        self.observer = observer
+        self.save_frequency = save_frequency
+        self.save_location = save_location
+        LstdQLearningAgent.__init__(self, *args, **kwargs)

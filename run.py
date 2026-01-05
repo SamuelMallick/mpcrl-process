@@ -1,11 +1,14 @@
 import os
 import sys
 import importlib
-import numpy as np
 from gymnasium.wrappers import TimeLimit
 from datetime import datetime
+import casadi as cs
+import numpy as np
 
-from agent.agent import DhsAgent
+from mpcrl import LearnableParameter, LearnableParametersDict
+
+from agent.agent import DhsAgent, DhsDpgAgent, DhsQLearningAgent
 from simulation_model.env import DHSSystem
 from mpc.mpc import DhsMpc
 from simulation_model.monitor_episodes import MonitorEpisodes
@@ -17,10 +20,10 @@ from mpc.mpc_recorder import MpcRecorder
 # if a config file passed on command line, otherwise use default config file
 if len(sys.argv) > 1:
     config_file = sys.argv[1]
-    mod = importlib.import_module(f"learning_configs.{config_file}")
+    mod = importlib.import_module(f"config_files.{config_file}")
     config = mod.Config()
 else:
-    from config_files.generate_data import Config  # type: ignore
+    from config_files.learn_dpg import Config  # type: ignore
 
     config = Config()
 
@@ -65,14 +68,53 @@ mhe = MheRecorder(
 now = datetime.now()
 s = now.strftime("%Y-%m-%d_%H-%M")
 os.makedirs(f"results/{config.id}", exist_ok=True)
-agent = DhsAgent(
-    mpc=mpc,
-    observer=mhe,
-    fixed_parameters={},
-    save_frequency=72,
-    save_location=f"results/{config.id}/{s}",
-)
-
-
-agent.evaluate(env=env, episodes=1, seed=1, raises=True)
+if config.learning_rate == 0:
+    agent = DhsAgent(
+        mpc=mpc,
+        observer=mhe,
+        fixed_parameters={},
+        save_frequency=288,
+        save_location=f"results/{config.id}/{s}",
+    )
+    agent.evaluate(env=env, episodes=1, seed=1, raises=True)
+else:
+    learnable_pars_init = {
+        name: config.mpc_pars[name] for name in config.learnable_pars
+    }
+    learnable_pars = LearnableParametersDict[cs.SX](
+        (
+            LearnableParameter(name, val.shape, val)
+            for name, val in learnable_pars_init.items()
+        )
+    )
+    if config.ddpg:
+        agent = DhsDpgAgent(
+            mpc=mpc,
+            observer=mhe,
+            discount_factor=config.gamma,
+            update_strategy=config.update_strategy,
+            optimizer=config.optimizer,
+            learnable_parameters=learnable_pars,
+            experience=config.experience,
+            exploration=config.exploration,
+            rollout_length=config.rollout_length,
+            fixed_parameters={},
+            save_frequency=72,
+            save_location=f"results/{config.id}/{s}",
+        )
+    else:
+        agent = DhsQLearningAgent(
+            mpc=mpc,
+            observer=mhe,
+            discount_factor=config.gamma,
+            update_strategy=config.update_strategy,
+            optimizer=config.optimizer,
+            learnable_parameters=learnable_pars,
+            experience=config.experience,
+            exploration=config.exploration,
+            fixed_parameters={},
+            save_frequency=72,
+            save_location=f"results/{config.id}/{s}",
+        )
+    agent.train(env=env, episodes=1, seed=1, raises=True)
 save_simulation_data(f"results/{config.id}/{s}", env, mpc, mhe)

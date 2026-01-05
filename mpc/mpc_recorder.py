@@ -22,7 +22,7 @@ class MpcRecorder(Wrapper[SymType]):
         self.P_loads.append(pars_arg["P_loads"])
 
         pars = {
-            **pars_arg,
+            **{k: v for k, v in pars_arg.items() if k in self.pars_init},
             **{k: v for k, v in self.pars_init.items() if k not in pars_arg},
         }
         o = self.f_y(T_b_s=sol.vals["T_b_s"], **pars)

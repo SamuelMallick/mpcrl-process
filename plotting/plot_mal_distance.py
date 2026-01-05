@@ -64,6 +64,12 @@ def plot_mal_distance(data: dict):
     X = np.vstack((mean, var)).T
     dists = monitoring_distance_calculator.mahalanobis_distance(X, return_all=True)[0]
 
+    skip_first_for_plot = 10
+    dists = dists[skip_first_for_plot:]
+    r = r[skip_first_for_plot:]
+    monitoring_data_set = monitoring_data_set[skip_first_for_plot:]
+    X = X[skip_first_for_plot:]
+
     _, ax = plt.subplots(1, 1, sharex=True)
     ax.plot(dists, "--", label="post")
     ax.plot(r, "o", label="during")
@@ -101,9 +107,8 @@ if __name__ == "__main__":
     if len(sys.argv) > 1:
         file_name = sys.argv[1]
         with open(file_name, "rb") as f:
-            sample_data = pickle.load(f)
+            data = pickle.load(f)
     else:
-        with open("results/base/2026-01-01_13-43.pkl", "rb") as f:
-            # with open("results/generate_data/2025-12-30_14-35_step792.pkl", "rb") as f:
+        with open("results/generate_data/2026-01-01_13-48_step3096.pkl", "rb") as f:
             data = pickle.load(f)
     plot_mal_distance(data)

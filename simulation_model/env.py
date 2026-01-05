@@ -127,7 +127,7 @@ class DHSSystem(gym.Env[np.ndarray, np.ndarray]):
         self.outputs = [value_references[name] for name in output_names]
 
         self.y = self.fmu.getReal(self.outputs)
-        return self.y, {}
+        return np.asarray(self.y), {}
 
     def get_costs(self, output: np.ndarray) -> float:
         P = output[20]  # boiler power
@@ -212,7 +212,7 @@ class DHSSystem(gym.Env[np.ndarray, np.ndarray]):
         self.step_counter += 1
         self.y = y_new
         return (
-            y_new,
+            np.asarray(y_new),
             r,
             False,
             False,
