@@ -58,8 +58,13 @@ def basic_plot(data: dict):
     r = data["rewards"]
     r = r[r != 0]
     r = r[20:]
+    if "agent_td_errors" in data:
+        perf = data["agent_td_errors"]
+    if "agent_policy_performances" in data:
+        perf = data["agent_policy_performances"]
     _, ax = plt.subplots(2, 1, sharex=True)
     ax[0].plot(r.T, label="Reward")
+    ax[1].plot(perf, label="Performance")
 
     # parameters plot
     updates = data["agent_updates_history"]
@@ -79,6 +84,6 @@ if __name__ == "__main__":
         with open(file_name, "rb") as f:
             sample_data = pickle.load(f)
     else:
-        with open("results/learn_q/2026-01-05_13-48_step864.pkl", "rb") as f:
+        with open("results/learn_dpg/2026-01-05_17-16_step30.pkl", "rb") as f:
             sample_data = pickle.load(f)
     basic_plot(sample_data)

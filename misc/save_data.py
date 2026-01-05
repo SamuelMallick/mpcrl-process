@@ -48,7 +48,10 @@ def save_simulation_data(
     if agent is not None:
         if agent.update_recorder is not None:
             data["agent_updates_history"] = agent.update_recorder.updates_history
-        if hasattr(agent, "policy_performances") and agent.policy_performances is not None:
+        if (
+            hasattr(agent, "policy_performances")
+            and agent.policy_performances is not None
+        ):
             data["agent_policy_performances"] = agent.policy_performances
         if hasattr(agent, "policy_gradients") and agent.policy_gradients is not None:
             data["agent_policy_gradients"] = agent.policy_gradients
