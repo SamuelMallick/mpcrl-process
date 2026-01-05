@@ -22,6 +22,7 @@ class DhsAgent(Agent):
         self.observer = observer
         self.save_frequency = 0
         self.save_location = ""
+        self.update_recorder = None
         super().__init__(*args, **kwargs)
 
     def evaluate(
