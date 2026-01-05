@@ -11,6 +11,10 @@ class Config(BaseConfig):
         super().__init__()
         self.id = "learn_q"
 
+        self.layers_path = "mpc/prediction_model/layers_low.mat"
+        self.input_scaler_path = "mpc/prediction_model/input_scaler_low.mat"
+        self.output_scaler_path = "mpc/prediction_model/output_scaler_low.mat"
+
         # learning
         self.learning_rate = 1e-1
         self.update_strategy = UpdateStrategy(288, hook="on_timestep_end", skip_first=1)
