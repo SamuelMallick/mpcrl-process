@@ -99,7 +99,7 @@ else:
             exploration=config.exploration,
             rollout_length=config.rollout_length,
             fixed_parameters={},
-            save_frequency=72,
+            save_frequency=288,
             save_location=f"results/{config.id}/{s}",
         )
     else:
@@ -113,7 +113,7 @@ else:
             experience=config.experience,
             exploration=config.exploration,
             fixed_parameters={},
-            save_frequency=72,
+            save_frequency=288,
             save_location=f"results/{config.id}/{s}",
         )
     agent.train(env=env, episodes=1, seed=1, raises=True)

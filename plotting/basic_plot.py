@@ -54,6 +54,8 @@ def basic_plot(data: dict):
 
     # costs plot
     r = data["rewards"]
+    r = r[r != 0]
+    r = r[20:]
     _, ax = plt.subplots(2, 1, sharex=True)
     ax[0].plot(r.T, label="Reward")
 
@@ -66,6 +68,6 @@ if __name__ == "__main__":
         with open(file_name, "rb") as f:
             sample_data = pickle.load(f)
     else:
-        with open("test_agent_data.pkl", "rb") as f:
+        with open("results/generate_data/2026-01-05_09-50_step576.pkl", "rb") as f:
             sample_data = pickle.load(f)
     basic_plot(sample_data)
