@@ -1,6 +1,7 @@
-import numpy as np
-import matplotlib.pyplot as plt
 import pickle
+
+import matplotlib.pyplot as plt
+import numpy as np
 from matplotlib.animation import FuncAnimation
 
 

@@ -1,9 +1,10 @@
+import os
+import pickle
+import sys
+
+import numpy as np
 from env import DHSSystem
 from monitor_episodes import MonitorEpisodes
-import pickle
-import numpy as np
-
-import sys, os
 
 sys.path.append(os.getcwd())
 from misc.save_data import save_simulation_data

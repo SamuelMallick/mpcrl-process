@@ -1,7 +1,9 @@
-import sys, os
-import numpy as np
-import matplotlib.pyplot as plt
+import os
 import pickle
+import sys
+
+import matplotlib.pyplot as plt
+import numpy as np
 
 sys.path.append(os.getcwd())
 from monitoring.mahalanobis_distance import MahalanobisDistance

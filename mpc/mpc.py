@@ -1,4 +1,5 @@
 import os
+import sys
 from typing import override
 
 import casadi as cs
@@ -6,8 +7,6 @@ import numpy as np
 from csnlp import Nlp
 from csnlp.multistart.multistart_nlp import ParallelMultistartNlp
 from csnlp.wrappers import Mpc
-
-import sys, os
 
 sys.path.append(os.getcwd())
 from mpc.prediction_model.dynamic_model import load_data, model

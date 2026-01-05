@@ -1,7 +1,8 @@
 from mpcrl import ExperienceReplay, UpdateStrategy
-from mpcrl.optim import NewtonMethod
 from mpcrl.core.exploration import EpsilonGreedyExploration
 from mpcrl.core.schedulers import ExponentialScheduler
+from mpcrl.optim import NewtonMethod
+
 from config_files.base import BaseConfig
 
 

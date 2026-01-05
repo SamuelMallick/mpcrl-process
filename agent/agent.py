@@ -1,6 +1,8 @@
-from mpcrl import Agent, LstdDpgAgent, LstdQLearningAgent
+import os
+import sys
+
 import numpy as np
-import sys, os
+from mpcrl import Agent, LstdDpgAgent, LstdQLearningAgent
 
 from misc.save_data import save_simulation_data
 from mpc.observer.mhe import Mhe

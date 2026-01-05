@@ -2,8 +2,8 @@ from collections import deque
 from time import perf_counter
 from typing import Any, Deque, Optional, SupportsFloat, TypeVar
 
-import numpy as np
 import casadi as cs
+import numpy as np
 import numpy.typing as npt
 from gymnasium import Env, Wrapper, utils
 
