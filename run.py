@@ -111,6 +111,8 @@ else:
             exploration=config.exploration,
             rollout_length=config.rollout_length,
             fixed_parameters={},
+            record_policy_performance=True,
+            record_policy_gradient=True,
         )
     else:
         agent = DhsQLearningAgent(
@@ -123,6 +125,7 @@ else:
             experience=config.experience,
             exploration=config.exploration,
             fixed_parameters={},
+            record_td_errors=True,
         )
     agent = Log(
         RecordUpdates(agent), level=logging.DEBUG, log_frequencies={"on_env_step": 1}

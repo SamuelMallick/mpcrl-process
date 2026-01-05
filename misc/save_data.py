@@ -48,6 +48,12 @@ def save_simulation_data(
     if agent is not None:
         if agent.update_recorder is not None:
             data["agent_updates_history"] = agent.update_recorder.updates_history
+        if agent.policy_performances is not None:
+            data["agent_policy_performances"] = agent.policy_performances
+        if agent.policy_gradients is not None:
+            data["agent_policy_gradients"] = agent.policy_gradients
+        if agent.td_errors is not None:
+            data["agent_td_errors"] = agent.td_errors
 
     with open(f"{save_name}.pkl", "wb") as f:
         pickle.dump(data, f)
