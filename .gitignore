@@ -8,6 +8,10 @@ __pycache__/
 slprj/
 results/
 monitoring/
+# Python bytecode
+__pycache__/
+*.pyc
+*.pyo
 
 # Distribution / packaging
 .Python
