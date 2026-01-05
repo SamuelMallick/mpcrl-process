@@ -8,7 +8,7 @@ class Config(BaseConfig):
 
     def __init__(self):
         super().__init__()
-        self.id = "generate_data"
+        self.id = "generate_data_low"
 
         self.layers_path = "mpc/prediction_model/layers_low.mat"
         self.input_scaler_path = "mpc/prediction_model/input_scaler_low.mat"
