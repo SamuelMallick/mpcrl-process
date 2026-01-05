@@ -2,6 +2,7 @@ import pickle
 import sys
 
 import matplotlib.pyplot as plt
+import numpy as np
 
 
 def basic_plot(data: dict):
@@ -60,6 +61,15 @@ def basic_plot(data: dict):
     _, ax = plt.subplots(2, 1, sharex=True)
     ax[0].plot(r.T, label="Reward")
 
+    # parameters plot
+    updates = data["agent_updates_history"]
+    _, ax = plt.subplots(len(updates), 1, sharex=True)
+    for i, (name, vals) in enumerate(updates.items()):
+        val = np.asarray(vals)
+        val = val.reshape(val.shape[0], -1)
+        ax[i].plot(val)
+        ax[i].set_ylabel(name)
+
     plt.show()
 
 
@@ -69,6 +79,6 @@ if __name__ == "__main__":
         with open(file_name, "rb") as f:
             sample_data = pickle.load(f)
     else:
-        with open("results/learn_q/2026-01-05_10-46_step1152.pkl", "rb") as f:
+        with open("results/learn_q/2026-01-05_13-48_step864.pkl", "rb") as f:
             sample_data = pickle.load(f)
     basic_plot(sample_data)
