@@ -19,11 +19,11 @@ class Config(BaseConfig):
 
         # learning
         self.learn_type = "dpg"
-        self.learning_rate = 1e-5
+        self.learning_rate = 1e-7
         self.update_strategy = UpdateStrategy(288, hook="on_timestep_end", skip_first=1)
         self.optimizer = NewtonMethod(learning_rate=self.learning_rate)
         self.experience = ExperienceReplay(maxlen=3, sample_size=3, include_latest=0)
-        self.exploration = OrnsteinUhlenbeckExploration(0.0, 5, mode="additive")
+        self.exploration = OrnsteinUhlenbeckExploration(0.0, 3, mode="additive")
         self.rollout_length = 96
         self.learnable_pars = [
             "T_ref",
