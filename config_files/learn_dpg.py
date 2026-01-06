@@ -1,5 +1,7 @@
+import numpy as np
 from mpcrl import ExperienceReplay, UpdateStrategy
-from mpcrl.core.exploration import EpsilonGreedyExploration
+from mpcrl.core.exploration import (EpsilonGreedyExploration,
+                                    OrnsteinUhlenbeckExploration)
 from mpcrl.core.schedulers import ExponentialScheduler
 from mpcrl.optim import NewtonMethod
 
@@ -17,26 +19,23 @@ class Config(BaseConfig):
 
         # learning
         self.ddpg = True
-        self.learning_rate = 5e-3
+        self.learning_rate = 1e-1
         self.update_strategy = UpdateStrategy(288, hook="on_timestep_end", skip_first=1)
         self.optimizer = NewtonMethod(learning_rate=self.learning_rate)
-        self.experience = ExperienceReplay(
-            maxlen=288, sample_size=288, include_latest=0
-        )
-        self.exploration = EpsilonGreedyExploration(
-            epsilon=ExponentialScheduler(0.99, 0.928),
-            strength=25,
-            hook="on_update",
-            mode="gradient-based",
-        )
-        self.rollout_length = 100
+        self.experience = ExperienceReplay(maxlen=3, sample_size=3, include_latest=0)
+        self.exploration = OrnsteinUhlenbeckExploration(0.0, 5, mode="additive")
+        self.rollout_length = 96
         self.learnable_pars = [
             "T_ref",
             "w",
             "c_t",
             "V0",
             "f",
-            "Q",
+            # "Q",
             "T_lim_off",
             "q_lim_off",
         ]
+
+        np.random.seed(1)
+        load_scale = 0.8 * np.random.random((5, 1)) + 0.6
+        self.P_loads *= load_scale
