@@ -1,10 +1,5 @@
-from collections.abc import Iterable
-from logging import DEBUG
-from operator import neg
 from typing import Any, Optional
 
-import casadi as cs
-import gymnasium as gym
 import numpy as np
 import numpy.typing as npt
 import torch
@@ -14,19 +9,9 @@ from botorch.models import SingleTaskGP
 from botorch.models.transforms import Normalize
 from botorch.optim import optimize_acqf
 from botorch.utils import standardize
-from csnlp.multistart import (ParallelMultistartNlp, RandomStartPoint,
-                              RandomStartPoints, StructuredStartPoint,
-                              StructuredStartPoints)
-from csnlp.wrappers import Mpc
+
 from gpytorch.mlls import ExactMarginalLogLikelihood
-from gymnasium import Env, ObservationWrapper
-from gymnasium.spaces import Box
-from gymnasium.wrappers import TimeLimit, TransformReward
-from mpcrl import (GlobOptLearningAgent, LearnableParameter,
-                   LearnableParametersDict, WarmStartStrategy)
 from mpcrl.optim import GradientFreeOptimizer
-from mpcrl.wrappers.agents import Log, RecordUpdates
-from mpcrl.wrappers.envs import MonitorEpisodes
 from scipy.stats.qmc import LatinHypercube
 
 
