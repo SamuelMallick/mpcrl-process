@@ -19,7 +19,7 @@ class Config(BaseConfig):
 
         # learning
         self.ddpg = True
-        self.learning_rate = 1e-1
+        self.learning_rate = 1e-5
         self.update_strategy = UpdateStrategy(288, hook="on_timestep_end", skip_first=1)
         self.optimizer = NewtonMethod(learning_rate=self.learning_rate)
         self.experience = ExperienceReplay(maxlen=3, sample_size=3, include_latest=0)
