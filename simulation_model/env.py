@@ -25,11 +25,13 @@ class DHSSystem(gym.Env[np.ndarray, np.ndarray]):
         monitoring_data_set: np.ndarray | None,
         monitoring_window: int,
         w: float = 20.0,
+        u_offset: float = 0,
     ):
         super().__init__()
         self.step_size = step_size
         self.num_internal_steps = int(self.step_size / self.internal_step_size)
         self.time = 0.0
+        self.u_offset = u_offset
 
         if {"P_loads", "elec_price", "T_s_min", "T_r_min"} > sim_data.keys():
             raise ValueError(
@@ -60,13 +62,6 @@ class DHSSystem(gym.Env[np.ndarray, np.ndarray]):
         else:
             self.fmu_filename = "simulation_model/dhs_storage_linux.fmu"
 
-    def reset(
-        self,
-        *,
-        seed=None,
-        options=None,
-    ) -> tuple[np.ndarray, dict[str, Any]]:
-        super().reset(seed=seed, options=options)
         self.time = 0.0
         self.step_counter = 0
 
@@ -126,6 +121,13 @@ class DHSSystem(gym.Env[np.ndarray, np.ndarray]):
         self.inputs = [value_references[name] for name in input_names]
         self.outputs = [value_references[name] for name in output_names]
 
+    def reset(
+        self,
+        *,
+        seed=None,
+        options=None,
+    ) -> tuple[np.ndarray, dict[str, Any]]:
+        super().reset(seed=seed, options=options)
         self.y = self.fmu.getReal(self.outputs)
         return np.asarray(self.y), {}
 
@@ -150,12 +152,14 @@ class DHSSystem(gym.Env[np.ndarray, np.ndarray]):
         self, action: np.ndarray
     ) -> tuple[np.ndarray, float, bool, bool, dict[str, Any]]:
         """Steps the system."""
-        if isinstance(action, float):
-            action = np.vstack((0, action))
-        elif action.shape[0] == 1:  # set 0 for storage flow if not provided
+        if (
+            isinstance(action, float) or action.shape[0] == 1
+        ):  # set 0 for storage flow if not provided
             action = np.vstack((0, action))
         elif action.shape[0] == 3:
             action = np.array([action[1] - action[0], action[2]])
+
+        action[1] += self.u_offset
 
         internal_step_counter = 0
         economic_cost, constraint_violation_cost = self.get_costs(self.y)

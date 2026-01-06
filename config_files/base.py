@@ -8,11 +8,13 @@ class BaseConfig:
 
     # simulations definition
     sim_len = 288 * 200
+    episodes = 1
     ts = 5.0 * 60
     w = 20.0
     with open("monitoring/monitoring_data_set.pkl", "rb") as f:
         monitoring_data_set = pickle.load(f)
     monitoring_window = 288
+    u_offset = 0
 
     # simulation data
     loads_folder = "simulation_data/loads_5"
@@ -44,7 +46,13 @@ class BaseConfig:
     # learning
     learning_rate = 0
     learnable_pars = []
-    ddpg = False
+    learnable_pars_bounds = {}
+    learn_type = "none"
+    optimizer = None
+    experience = None
+    exploration = None
+    update_strategy = None
+    rollout_length = None
 
     def __init__(self):
         self.P_loads, self.elec_price, self.T_s_min, self.T_r_min = (

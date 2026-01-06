@@ -18,7 +18,7 @@ class Config(BaseConfig):
         self.output_scaler_path = "mpc/prediction_model/output_scaler_low.mat"
 
         # learning
-        self.ddpg = True
+        self.learn_type = "dpg"
         self.learning_rate = 1e-5
         self.update_strategy = UpdateStrategy(288, hook="on_timestep_end", skip_first=1)
         self.optimizer = NewtonMethod(learning_rate=self.learning_rate)

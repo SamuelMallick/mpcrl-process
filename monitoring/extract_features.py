@@ -3,7 +3,7 @@ import pickle
 import matplotlib.pyplot as plt
 import numpy as np
 
-with open("results/generate_data/2026-01-01_13-48_step7776.pkl", "rb") as f:
+with open("results/generate_data/2026-01-05_14-19_step14400.pkl", "rb") as f:
     data = pickle.load(f)
 
 ep = 0
@@ -33,7 +33,7 @@ violation_cost = data["constraint_violation_cost"][ep, skip_first:]
 disturbance_sum = -np.sum(P_loads, axis=1, keepdims=True)
 
 # create features
-window_length = 288
+window_length = 72
 num_points = 500
 feature_vector = np.hstack((eff, economic_cost, violation_cost, disturbance_sum)).T
 

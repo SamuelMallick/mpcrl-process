@@ -10,7 +10,8 @@ from gymnasium.wrappers import TimeLimit
 from mpcrl import LearnableParameter, LearnableParametersDict
 from mpcrl.wrappers.agents import Log, RecordUpdates
 
-from agent.agent import DhsAgent, DhsDpgAgent, DhsQLearningAgent
+from agent.agent import (DhsAgent, DhsDpgAgent, DhsGlobOptAgent,
+                         DhsQLearningAgent)
 from misc.save_data import save_simulation_data
 from mpc.mpc import DhsMpc
 from mpc.mpc_recorder import MpcRecorder
@@ -25,7 +26,7 @@ if len(sys.argv) > 1:
     mod = importlib.import_module(f"config_files.{config_file}")
     config = mod.Config()
 else:
-    from config_files.learn_dpg import Config  # type: ignore
+    from config_files.learn_bo import Config  # type: ignore
 
     config = Config()
 
@@ -42,6 +43,7 @@ env = MonitorEpisodes(
             monitoring_data_set=config.monitoring_data_set,
             monitoring_window=config.monitoring_window,
             w=config.w,
+            u_offset=config.u_offset,
         ),
         max_episode_steps=config.sim_len,
     )
@@ -71,7 +73,7 @@ mhe = MheRecorder(
 now = datetime.now()
 s = now.strftime("%Y-%m-%d_%H-%M")
 os.makedirs(f"results/{config.id}", exist_ok=True)
-if config.learning_rate == 0:
+if config.learn_type == "none":
     agent = Log(
         DhsAgent(
             mpc=mpc,
@@ -86,7 +88,7 @@ if config.learning_rate == 0:
         episodes=1,
         seed=1,
         raises=True,
-        save_frequency=288,
+        save_frequency=72,
         save_location=f"results/{config.id}/{s}",
     )
 else:
@@ -95,11 +97,17 @@ else:
     }
     learnable_pars = LearnableParametersDict[cs.SX](
         (
-            LearnableParameter(name, val.shape, val)
-            for name, val in learnable_pars_init.items()
+            LearnableParameter(
+                name,
+                learnable_pars_init[name].shape,
+                learnable_pars_init[name],
+                config.learnable_pars_bounds[name][0],
+                config.learnable_pars_bounds[name][1],
+            )
+            for name in learnable_pars_init.keys()
         )
     )
-    if config.ddpg:
+    if config.learn_type == "dpg":
         agent = DhsDpgAgent(
             mpc=mpc,
             observer=mhe,
@@ -114,7 +122,7 @@ else:
             record_policy_performance=True,
             record_policy_gradient=True,
         )
-    else:
+    elif config.learn_type == "q_learning":
         agent = DhsQLearningAgent(
             mpc=mpc,
             observer=mhe,
@@ -127,12 +135,20 @@ else:
             fixed_parameters={},
             record_td_errors=True,
         )
+    elif config.learn_type == "bo":
+        agent = DhsGlobOptAgent(
+            mpc=mpc,
+            observer=mhe,
+            learnable_parameters=learnable_pars,
+            optimizer=config.optimizer,
+            fixed_parameters={},
+        )
     agent = Log(
         RecordUpdates(agent), level=logging.DEBUG, log_frequencies={"on_env_step": 1}
     )
     agent.train(
         env=env,
-        episodes=1,
+        episodes=config.episodes,
         seed=1,
         raises=True,
         save_frequency=288,

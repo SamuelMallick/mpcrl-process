@@ -2,7 +2,7 @@ import os
 import sys
 
 import numpy as np
-from mpcrl import Agent, LstdDpgAgent, LstdQLearningAgent
+from mpcrl import Agent, GlobOptLearningAgent, LstdDpgAgent, LstdQLearningAgent
 from mpcrl.wrappers.agents import RecordUpdates
 
 from misc.save_data import save_simulation_data
@@ -151,6 +151,37 @@ class DhsQLearningAgent(DhsAgent, LstdQLearningAgent):
         self.save_location = ""
         self.update_recorder = None
         LstdQLearningAgent.__init__(self, *args, **kwargs)
+
+    def train(
+        self,
+        env,
+        episodes,
+        seed=None,
+        raises=True,
+        env_reset_options=None,
+        save_frequency: int = 0,
+        save_location: str = "",
+        update_recorder: RecordUpdates | None = None,
+    ):
+        self.update_recorder = update_recorder
+        self.save_frequency = save_frequency
+        self.save_location = save_location
+        return super().train(env, episodes, seed, raises, env_reset_options)
+
+
+class DhsGlobOptAgent(DhsAgent, GlobOptLearningAgent):
+
+    def __init__(
+        self,
+        *args,
+        observer: Mhe,
+        **kwargs,
+    ):
+        self.observer = observer
+        self.save_frequency = 0
+        self.save_location = ""
+        self.update_recorder = None
+        GlobOptLearningAgent.__init__(self, *args, **kwargs)
 
     def train(
         self,
