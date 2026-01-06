@@ -58,9 +58,11 @@ class DhsMpc(Mpc):
         Q = self.parameter("Q", (1 + 7 + 1, 1 + 7 + 1))  # quadratic cost term
         T_lim_off = self.parameter("T_lim_off", (5,))  # temperature limit offset
         q_lim_off = self.parameter("q_lim_off", (1,))  # mass flow limit offset
+        u_offset = self.parameter("u_offset", (1,))  # input offset
 
         # input variables
         u_, u = self.action("T_b_s", 1, lb=self.T_b_min, ub=self.T_s_max)
+        u = u + u_offset
 
         # NN variables and parameters
         P_loads = self.parameter("P_loads", (5, prediction_horizon))

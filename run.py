@@ -10,8 +10,7 @@ from gymnasium.wrappers import TimeLimit
 from mpcrl import LearnableParameter, LearnableParametersDict
 from mpcrl.wrappers.agents import Log, RecordUpdates
 
-from agent.agent import (DhsAgent, DhsDpgAgent, DhsGlobOptAgent,
-                         DhsQLearningAgent)
+from agent.agent import DhsAgent, DhsDpgAgent, DhsGlobOptAgent, DhsQLearningAgent
 from misc.save_data import save_simulation_data
 from mpc.mpc import DhsMpc
 from mpc.mpc_recorder import MpcRecorder
@@ -26,7 +25,7 @@ if len(sys.argv) > 1:
     mod = importlib.import_module(f"config_files.{config_file}")
     config = mod.Config()
 else:
-    from config_files.learn_bo import Config  # type: ignore
+    from config_files.learn_bo_u_offset import Config  # type: ignore
 
     config = Config()
 

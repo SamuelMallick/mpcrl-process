@@ -41,6 +41,7 @@ class BaseConfig:
         "Q": np.zeros((1 + 7 + 1, 1 + 7 + 1)),
         "T_lim_off": np.zeros((5,)),
         "q_lim_off": np.zeros((1,)),
+        "u_offset": u_offset * np.ones((1,)),
     }
 
     # learning

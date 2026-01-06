@@ -58,12 +58,12 @@ class DhsAgent(Agent):
 
         if self.time_step % self.save_frequency == 0 and self.save_frequency > 0:
             save_simulation_data(
-                f"{self.save_location}_step{self.time_step}",
+                f"{self.save_location}_ep{episode}_step{self.time_step}",
                 env,
                 self.V,
                 self.observer,
                 self,
-                episode_in_progress=True,
+                episode_in_progress=True if env.ep_observations else False,
             )
 
         # handle observer update
