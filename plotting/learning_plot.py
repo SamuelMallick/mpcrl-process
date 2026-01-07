@@ -6,9 +6,9 @@ import numpy as np
 
 
 def basic_plot(data: dict):
-    plot_ep = 0
     # sim data plot
-    P_loads, elec_price = data["P_loads"][plot_ep], data["elec_price"][plot_ep]
+    P_loads, elec_price = data["P_loads"], data["elec_price"]
+    P_loads, elec_price = P_loads.reshape(-1, P_loads.shape[2]), elec_price.reshape(-1)
     _, ax = plt.subplots(2, 1, sharex=True)
     ax[0].plot(P_loads, label=["P1", "P2", "P3", "P4", "P5"])
     ax[1].plot(elec_price, label="Electricity Price")
@@ -17,11 +17,18 @@ def basic_plot(data: dict):
 
     # outputs and inputs plot
     u, y, T_s_min, T_r_min, q_r_min = (
-        data["u"][plot_ep],
-        data["y"][plot_ep],
-        data["T_s_min"][plot_ep],
-        data["T_r_min"][plot_ep],
-        data["q_r_min"][plot_ep],
+        data["u"],
+        data["y"],
+        data["T_s_min"],
+        data["T_r_min"],
+        data["q_r_min"],
+    )
+    u, y, T_s_min, T_r_min, q_r_min = (
+        u.reshape(-1),
+        y.reshape(-1, y.shape[2]),
+        T_s_min.reshape(-1),
+        T_r_min.reshape(-1),
+        q_r_min.reshape(-1),
     )
     Ts = y[:, [0, 3, 6, 9, 12]]
     Tb = y[:, 17]
@@ -60,8 +67,10 @@ def basic_plot(data: dict):
     r = r[20:]
     if "agent_td_errors" in data:
         perf = data["agent_td_errors"]
-    if "agent_policy_performances" in data:
+    elif "agent_policy_performances" in data:
         perf = data["agent_policy_performances"]
+    else:
+        perf = []
     _, ax = plt.subplots(2, 1, sharex=True)
     ax[0].plot(r.T, label="Reward")
     ax[1].plot(perf, label="Performance")
@@ -69,6 +78,8 @@ def basic_plot(data: dict):
     # parameters plot
     updates = data["agent_updates_history"]
     _, ax = plt.subplots(len(updates), 1, sharex=True)
+    if len(updates) == 1:
+        ax = [ax]
     for i, (name, vals) in enumerate(updates.items()):
         val = np.asarray(vals)
         val = val.reshape(val.shape[0], -1)
@@ -84,6 +95,8 @@ if __name__ == "__main__":
         with open(file_name, "rb") as f:
             sample_data = pickle.load(f)
     else:
-        with open("results/learn_dpg/2026-01-05_17-16_step30.pkl", "rb") as f:
+        with open(
+            "results/learn_bo_u_offset/2026-01-06_16-32_ep39_step288.pkl", "rb"
+        ) as f:
             sample_data = pickle.load(f)
     basic_plot(sample_data)
