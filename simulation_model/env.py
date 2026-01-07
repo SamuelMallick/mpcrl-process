@@ -62,22 +62,7 @@ class DHSSystem(gym.Env[np.ndarray, np.ndarray]):
         else:
             self.fmu_filename = "simulation_model/dhs_storage_linux.fmu"
 
-        self.time = 0.0
-        self.step_counter = 0
-
-        # FMU setup
-        model_description = read_model_description(self.fmu_filename)
-        unzipdir = extract(self.fmu_filename)
-        self.fmu = FMU2Slave(
-            guid=model_description.guid,
-            unzipDirectory=unzipdir,
-            modelIdentifier=model_description.coSimulation.modelIdentifier,
-            instanceName="instance1",
-        )
-        self.fmu.instantiate()
-        self.fmu.setupExperiment(startTime=0.0)
-        self.fmu.enterInitializationMode()
-        self.fmu.exitInitializationMode()
+        model_description = self.reset_fmu()
 
         # collect the value references for fmu variables
         value_references = {}
@@ -121,6 +106,26 @@ class DHSSystem(gym.Env[np.ndarray, np.ndarray]):
         self.inputs = [value_references[name] for name in input_names]
         self.outputs = [value_references[name] for name in output_names]
 
+    def reset_fmu(self):
+        self.time = 0.0
+        self.step_counter = 0
+
+        # FMU setup
+        model_description = read_model_description(self.fmu_filename)
+        unzipdir = extract(self.fmu_filename)
+        self.fmu = FMU2Slave(
+            guid=model_description.guid,
+            unzipDirectory=unzipdir,
+            modelIdentifier=model_description.coSimulation.modelIdentifier,
+            instanceName="instance1",
+        )
+        self.fmu.instantiate()
+        self.fmu.setupExperiment(startTime=0.0)
+        self.fmu.enterInitializationMode()
+        self.fmu.exitInitializationMode()
+
+        return model_description
+
     def reset(
         self,
         *,
@@ -128,6 +133,18 @@ class DHSSystem(gym.Env[np.ndarray, np.ndarray]):
         options=None,
     ) -> tuple[np.ndarray, dict[str, Any]]:
         super().reset(seed=seed, options=options)
+        self.reset_fmu()
+
+        warm_up_action = np.array([[0.0], [70.0]])
+        warm_up_action = np.vstack((warm_up_action, self.P_loads[:, [0]]))
+        self.fmu.setReal(self.inputs, list(warm_up_action))
+        for _ in range(30000 * 10):
+            self.fmu.doStep(
+                currentCommunicationPoint=self.time,
+                communicationStepSize=self.internal_step_size,
+            )
+            self.time += self.internal_step_size
+
         self.y = self.fmu.getReal(self.outputs)
         return np.asarray(self.y), {}
 
