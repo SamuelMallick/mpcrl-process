@@ -21,7 +21,11 @@ class BoTorchOptimizer(GradientFreeOptimizer):
     prefers_dict = False  # ask-and-tell methods should receive arrays, not dicts
 
     def __init__(
-        self, initial_random: int = 5, seed: Optional[int] = None, **kwargs: Any
+        self,
+        initial_random: int = 5,
+        initial_points: list = [np.ndarray],
+        seed: Optional[int] = None,
+        **kwargs: Any
     ) -> None:
         """Initializes the optimizer.
 
@@ -29,6 +33,8 @@ class BoTorchOptimizer(GradientFreeOptimizer):
         ----------
         initial_random : int, optional
             Number of initial random guesses, by default ``5``. Must be positive.
+        initial_points : list[np.ndarray], optional
+            List of points to use in place of random initial guesses, by default ``[]``.
         seed : int, optional
             Seed for the random number generator, by default ``None``.
         """
@@ -36,6 +42,7 @@ class BoTorchOptimizer(GradientFreeOptimizer):
             raise ValueError("`initial_random` must be positive.")
         super().__init__(**kwargs)
         self._initial_random = initial_random
+        self._initial_points = initial_points
         self._seed = seed
 
     def _init_update_solver(self) -> None:
@@ -46,7 +53,11 @@ class BoTorchOptimizer(GradientFreeOptimizer):
 
         # use latin hypercube sampling to generate the initial random guesses
         lhs = LatinHypercube(pars.size, seed=self._seed)
-        self._train_inputs = lhs.random(self._initial_random) * (ub - lb) + lb
+        self._train_inputs = (
+            lhs.random(self._initial_random - len(self._initial_points)) * (ub - lb)
+            + lb
+        )
+        self._train_inputs = np.vstack((self._initial_points, self._train_inputs))
         self._train_targets = np.empty((0,))  # we dont know the targets yet
         self._n_ask = -1  # to track the number of ask iterations
 
