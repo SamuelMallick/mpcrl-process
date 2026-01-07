@@ -12,14 +12,14 @@ from optimizers.bo import BoTorchOptimizer
 class Config(BaseConfig):
     def __init__(self):
         super().__init__()
-        self.id = "learn_bo_5"
+        self.id = "learn_bo_6"
 
         self.sim_len = 288
         self.episodes = 100
 
-        with open("monitoring/monitoring_data_set_short.pkl", "rb") as f:
+        with open("monitoring/monitoring_data_set.pkl", "rb") as f:
             self.monitoring_data_set = pickle.load(f)
-        self.monitoring_window = 72
+        self.monitoring_window = 286
 
         self.layers_path = "mpc/prediction_model/layers_low.mat"
         self.input_scaler_path = "mpc/prediction_model/input_scaler_low.mat"
