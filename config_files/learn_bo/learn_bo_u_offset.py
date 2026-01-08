@@ -26,7 +26,8 @@ class Config(BaseConfig):
 
         # learning
         self.learn_type = "bo"
-        self.optimizer = BoTorchOptimizer(initial_random=2, seed=1)
+        self.acquisition_function = "lei"
+        self.optimizer = BoTorchOptimizer(initial_random=2, seed=1, acquisition_function=self.acquisition_function)
         self.learnable_pars = [
             # "T_ref",
             # "w",

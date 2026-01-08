@@ -1,4 +1,5 @@
 import pickle
+
 import numpy as np
 from mpcrl import ExperienceReplay, UpdateStrategy
 from mpcrl.core.exploration import EpsilonGreedyExploration
@@ -12,32 +13,31 @@ from optimizers.bo import BoTorchOptimizer
 class Config(BaseConfig):
     def __init__(self):
         super().__init__()
-        self.id = "learn_bo"
+        self.id = "learn_bo_u_offset_2"
 
         self.sim_len = 288
         self.episodes = 100
+
+        self.u_offset = -1
 
         with open("monitoring/monitoring_data_set_short.pkl", "rb") as f:
             self.monitoring_data_set = pickle.load(f)
         self.monitoring_window = 72
 
-        self.layers_path = "mpc/prediction_model/layers_low.mat"
-        self.input_scaler_path = "mpc/prediction_model/input_scaler_low.mat"
-        self.output_scaler_path = "mpc/prediction_model/output_scaler_low.mat"
-
         # learning
         self.learn_type = "bo"
-        self.acquisition_function = "lei"
+        self.acquisition_function = "ucb"
         self.optimizer = BoTorchOptimizer(initial_random=2, seed=1, acquisition_function=self.acquisition_function)
         self.learnable_pars = [
-            "T_ref",
-            "w",
-            "c_t",
-            "V0",
-            "f",
-            "Q",
-            "T_lim_off",
-            "q_lim_off",
+            # "T_ref",
+            # "w",
+            # "c_t",
+            # "V0",
+            # "f",
+            # "Q",
+            # "T_lim_off",
+            # "q_lim_off",
+            "u_offset",
         ]
         self.learnable_pars_bounds = {
             "T_ref": (73 * np.ones((5,)), 77 * np.ones((5,))),
@@ -51,8 +51,5 @@ class Config(BaseConfig):
             ),
             "T_lim_off": (-0.1 * np.ones((5,)), 0.1 * np.ones((5,))),
             "q_lim_off": (-0.2 * np.ones((1,)), 0.2 * np.ones((1,))),
+            "u_offset": (-2 * np.ones((1,)), 2 * np.ones((1,))),
         }
-
-        np.random.seed(1)
-        load_scale = 0.8 * np.random.random((5, 1)) + 0.6
-        self.P_loads *= load_scale

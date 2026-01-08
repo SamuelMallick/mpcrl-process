@@ -3,7 +3,7 @@ from typing import Any, Optional
 import numpy as np
 import numpy.typing as npt
 import torch
-from botorch.acquisition import LogExpectedImprovement
+from botorch.acquisition import LogExpectedImprovement, UpperConfidenceBound
 from botorch.fit import fit_gpytorch_mll
 from botorch.models import SingleTaskGP
 from botorch.models.transforms import Normalize
@@ -24,6 +24,7 @@ class BoTorchOptimizer(GradientFreeOptimizer):
         self,
         initial_random: int = 5,
         initial_points: list = [np.ndarray],
+        acquisition_function: str = "lei",
         seed: Optional[int] = None,
         **kwargs: Any
     ) -> None:
@@ -43,6 +44,7 @@ class BoTorchOptimizer(GradientFreeOptimizer):
         super().__init__(**kwargs)
         self._initial_random = initial_random
         self._initial_points = initial_points
+        self._acquisition_function = acquisition_function
         self._seed = seed
 
     def _init_update_solver(self) -> None:
@@ -83,7 +85,14 @@ class BoTorchOptimizer(GradientFreeOptimizer):
         fit_gpytorch_mll(ExactMarginalLogLikelihood(gp.likelihood, gp))
 
         # maximize the acquisition function to get the next guess
-        af = LogExpectedImprovement(gp, train_targets.amin(), maximize=False)
+        if self._acquisition_function == "lei":
+            af = LogExpectedImprovement(gp, train_targets.amin(), maximize=False)
+        elif self._acquisition_function == "ucb":   
+            af = UpperConfidenceBound(gp, train_targets.amin(), maximize=False)
+        else:
+            raise ValueError(
+                f"Acquisition function '{self._acquisition_function}' not recognized."
+            )
         seed = self._seed + self._n_ask
         acqfun_optimizer = (
             optimize_acqf(af, bounds, 1, 16, 64, {"seed": seed})[0].numpy().reshape(-1)
