@@ -23,7 +23,7 @@ class BoTorchOptimizer(GradientFreeOptimizer):
     def __init__(
         self,
         initial_random: int = 5,
-        initial_points: list = [np.ndarray],
+        initial_points: list[np.ndarray] = [],
         acquisition_function: str = "lei",
         seed: Optional[int] = None,
         **kwargs: Any
@@ -59,7 +59,8 @@ class BoTorchOptimizer(GradientFreeOptimizer):
             lhs.random(self._initial_random - len(self._initial_points)) * (ub - lb)
             + lb
         )
-        self._train_inputs = np.vstack((self._initial_points, self._train_inputs))
+        if len(self._initial_points) > 0:
+            self._train_inputs = np.vstack((self._initial_points, self._train_inputs))
         self._train_targets = np.empty((0,))  # we dont know the targets yet
         self._n_ask = -1  # to track the number of ask iterations
 
