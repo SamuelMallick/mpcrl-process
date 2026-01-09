@@ -239,7 +239,7 @@ class DHSSystem(gym.Env[np.ndarray, np.ndarray]):
             "T_r_min": T_r_min,
             "economic_cost": economic_cost,
             "constraint_violation_cost": constraint_violation_cost,
-            "monitoring_distance": monitoring_distance,
+            "monitoring_distance": np.asarray(monitoring_distance),
             "q_r_min": np.asarray(self.q_r_min),
             "efficiency": efficiency,
         }
