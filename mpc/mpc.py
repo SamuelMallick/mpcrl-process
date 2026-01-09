@@ -42,6 +42,9 @@ class DhsMpc(Mpc):
         input_spacing = int(cs.ceil(prediction_horizon / num_inputs))
         super().__init__(nlp, prediction_horizon, input_spacing=input_spacing)
 
+        # artificially adding states for dpg value
+        self._initial_states["y0"] = self.parameter("y0", (28,))
+
         self.dt = dt
         self.pars_init = pars_init
 
@@ -81,7 +84,6 @@ class DhsMpc(Mpc):
             output_scaler_path,
         )
         y = o[0]
-        self._initial_states["y0"] = self.parameter("y0", (20,))
         T_i_s = y[:5, :]
         T_r = y[5, :]
         q_r = y[6, :]

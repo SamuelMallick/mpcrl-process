@@ -43,6 +43,7 @@ class DHSSystem(gym.Env[np.ndarray, np.ndarray]):
 
         if monitoring_data_set is None:
             self.monitoring_distance_calculator = None
+            self.monitoring_state_size = 0
         else:
             self.monitoring_distance_calculator = MahalanobisDistance(
                 [monitoring_data_set],
@@ -53,6 +54,7 @@ class DHSSystem(gym.Env[np.ndarray, np.ndarray]):
                     )
                 ],
             )
+            self.monitoring_state_size = monitoring_data_set.shape[1]
         self.monitoring_window = monitoring_window
         self.observed_data = None
 
@@ -146,7 +148,7 @@ class DHSSystem(gym.Env[np.ndarray, np.ndarray]):
             self.time += self.internal_step_size
 
         self.y = self.fmu.getReal(self.outputs)
-        return np.asarray(self.y), {}
+        return np.hstack((np.asarray(self.y), np.zeros(self.monitoring_state_size))), {}
 
     def get_costs(self, output: np.ndarray) -> float:
         P = output[19]  # boiler power
@@ -187,11 +189,14 @@ class DHSSystem(gym.Env[np.ndarray, np.ndarray]):
                     self.observed_data, return_all=True
                 )
                 r = dist[0].item()
+                monitoring_state = self.observed_data
                 self.observed_data = None
             else:
                 r = 0.0
+                monitoring_state = np.zeros(self.monitoring_state_size)
         else:
             r = 0.0
+            monitoring_state = np.zeros(self.monitoring_state_size)
 
         P_loads = self.P_loads[:, [self.step_counter]]
         elec_price = self.elec_price[self.step_counter]
@@ -233,7 +238,7 @@ class DHSSystem(gym.Env[np.ndarray, np.ndarray]):
         self.step_counter += 1
         self.y = y_new
         return (
-            np.asarray(y_new),
+            np.hstack((np.asarray(self.y), monitoring_state)),
             r,
             False,
             False,
