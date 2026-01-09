@@ -63,17 +63,16 @@ def basic_plot(data: dict):
 
     # costs plot
     r = data["rewards"]
-    r = r[r != 0]
-    r = r[20:]
     if "agent_td_errors" in data:
         perf = data["agent_td_errors"]
     elif "agent_policy_performances" in data:
         perf = data["agent_policy_performances"]
     else:
-        perf = []
-    _, ax = plt.subplots(2, 1, sharex=True)
-    ax[0].plot(r.T, label="Reward")
+        perf = np.sum(r, axis=1)
+    _, ax = plt.subplots(2, 1, sharex=False)
+    ax[0].plot(r.reshape(-1), label="Reward")
     ax[1].plot(perf, label="Performance")
+    ax[1].set_yscale("log")
 
     # parameters plot
     updates = data["agent_updates_history"]

@@ -11,7 +11,7 @@ from monitoring.mahalanobis_distance import MahalanobisDistance
 
 def plot_mal_distance(data: dict):
 
-    with open("monitoring/monitoring_data_set.pkl", "rb") as f:
+    with open("monitoring/monitoring_data_set_short.pkl", "rb") as f:
         monitoring_data_set = pickle.load(f)
 
     monitoring_distance_calculator = MahalanobisDistance(
@@ -24,27 +24,32 @@ def plot_mal_distance(data: dict):
         ],
     )
 
-    ep = 0
-    skip_first = 0
-    P_loads = data["P_loads"][ep, skip_first:]
-    y = data["y"][ep, skip_first:-1]
-    r = data["rewards"][ep, skip_first:]
-    r = r[r != 0]
+    skip_first = 10
+    P_loads = data["P_loads"][:, skip_first:]
+    y = data["y"][:, skip_first:-1]
+    r = data["rewards"][:, skip_first:]
+    P_loads, y, r = (
+        P_loads.reshape(-1, P_loads.shape[2]),
+        y.reshape(-1, y.shape[2]),
+        r.reshape(-1),
+    )
+    # r = r[r != 0]
 
     # economic cost
-    economic_cost = data["economic_cost"][ep, skip_first:]
-
+    economic_cost = data["economic_cost"][:, skip_first:]
+    economic_cost = economic_cost.reshape(-1, 1)
     # efficiency
     eff = -np.sum(P_loads, axis=1, keepdims=True) / y[:, [19]]
 
     # constraint violations
-    violation_cost = data["constraint_violation_cost"][ep, skip_first:]
+    violation_cost = data["constraint_violation_cost"][:, skip_first:]
+    violation_cost = violation_cost.reshape(-1, 1)
 
     # disturbance sum
     disturbance_sum = -np.sum(P_loads, axis=1, keepdims=True)
 
     # create features
-    window_length = 288
+    window_length = 72
     feature_vector = np.hstack((eff, economic_cost, violation_cost, disturbance_sum)).T
 
     # cumulative sums along axis=1
@@ -111,6 +116,8 @@ if __name__ == "__main__":
         with open(file_name, "rb") as f:
             data = pickle.load(f)
     else:
-        with open("results/generate_data/2026-01-01_13-48_step3096.pkl", "rb") as f:
+        with open(
+            "results/learn_bo_u_offset/2026-01-06_16-32_ep39_step288.pkl", "rb"
+        ) as f:
             data = pickle.load(f)
     plot_mal_distance(data)
