@@ -100,8 +100,8 @@ else:
                 name,
                 learnable_pars_init[name].shape,
                 learnable_pars_init[name],
-                config.learnable_pars_bounds[name][0],
-                config.learnable_pars_bounds[name][1],
+                config.learnable_pars_bounds.get(name, (-np.inf, +np.inf))[0],
+                config.learnable_pars_bounds.get(name, (-np.inf, +np.inf))[1],
             )
             for name in learnable_pars_init.keys()
         )
