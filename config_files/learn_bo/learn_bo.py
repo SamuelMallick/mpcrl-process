@@ -1,4 +1,5 @@
 import pickle
+
 import numpy as np
 from mpcrl import ExperienceReplay, UpdateStrategy
 from mpcrl.core.exploration import EpsilonGreedyExploration
@@ -28,7 +29,9 @@ class Config(BaseConfig):
         # learning
         self.learn_type = "bo"
         self.acquisition_function = "lei"
-        self.optimizer = BoTorchOptimizer(initial_random=2, seed=1, acquisition_function=self.acquisition_function)
+        self.optimizer = BoTorchOptimizer(
+            initial_random=2, seed=1, acquisition_function=self.acquisition_function
+        )
         self.learnable_pars = [
             "T_ref",
             "w",

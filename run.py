@@ -10,7 +10,8 @@ from gymnasium.wrappers import TimeLimit
 from mpcrl import LearnableParameter, LearnableParametersDict
 from mpcrl.wrappers.agents import Log, RecordUpdates
 
-from agent.agent import DhsAgent, DhsDpgAgent, DhsGlobOptAgent, DhsQLearningAgent
+from agent.agent import (DhsAgent, DhsDpgAgent, DhsGlobOptAgent,
+                         DhsQLearningAgent)
 from misc.save_data import save_simulation_data
 from mpc.mpc import DhsMpc
 from mpc.mpc_recorder import MpcRecorder

@@ -1,9 +1,7 @@
 import numpy as np
 from mpcrl import ExperienceReplay, UpdateStrategy
-from mpcrl.core.exploration import (
-    EpsilonGreedyExploration,
-    OrnsteinUhlenbeckExploration,
-)
+from mpcrl.core.exploration import (EpsilonGreedyExploration,
+                                    OrnsteinUhlenbeckExploration)
 from mpcrl.core.schedulers import ExponentialScheduler
 from mpcrl.optim import NewtonMethod
 

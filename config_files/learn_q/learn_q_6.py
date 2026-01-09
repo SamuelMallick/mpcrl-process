@@ -14,7 +14,7 @@ class Config(BaseConfig):
 
         self.use_distance_reward = False
         self.u_offset = -1
-        
+
         # learning
         self.learn_type = "q_learning"
         self.learning_rate = 1e0

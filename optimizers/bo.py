@@ -9,7 +9,6 @@ from botorch.models import SingleTaskGP
 from botorch.models.transforms import Normalize
 from botorch.optim import optimize_acqf
 from botorch.utils import standardize
-
 from gpytorch.mlls import ExactMarginalLogLikelihood
 from mpcrl.optim import GradientFreeOptimizer
 from scipy.stats.qmc import LatinHypercube
@@ -26,7 +25,7 @@ class BoTorchOptimizer(GradientFreeOptimizer):
         initial_points: list[np.ndarray] = [],
         acquisition_function: str = "lei",
         seed: Optional[int] = None,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> None:
         """Initializes the optimizer.
 
@@ -88,7 +87,7 @@ class BoTorchOptimizer(GradientFreeOptimizer):
         # maximize the acquisition function to get the next guess
         if self._acquisition_function == "lei":
             af = LogExpectedImprovement(gp, train_targets.amin(), maximize=False)
-        elif self._acquisition_function == "ucb":   
+        elif self._acquisition_function == "ucb":
             af = UpperConfidenceBound(gp, train_targets.amin(), maximize=False)
         else:
             raise ValueError(
