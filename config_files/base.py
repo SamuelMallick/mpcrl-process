@@ -15,6 +15,7 @@ class BaseConfig:
         monitoring_data_set = pickle.load(f)
     monitoring_window = 288
     u_offset = 0
+    use_distance_reward = True
 
     # simulation data
     loads_folder = "simulation_data/loads_5"

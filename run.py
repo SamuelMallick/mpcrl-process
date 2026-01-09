@@ -41,6 +41,7 @@ env = MonitorEpisodes(
             },
             monitoring_data_set=config.monitoring_data_set,
             monitoring_window=config.monitoring_window,
+            use_distance_reward=config.use_distance_reward,
             w=config.w,
             u_offset=config.u_offset,
         ),

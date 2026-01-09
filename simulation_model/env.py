@@ -24,6 +24,7 @@ class DHSSystem(gym.Env[np.ndarray, np.ndarray]):
         sim_data: dict[str, Any],
         monitoring_data_set: np.ndarray | None,
         monitoring_window: int,
+        use_distance_reward: bool = True,
         w: float = 20.0,
         u_offset: float = 0,
     ):
@@ -32,6 +33,7 @@ class DHSSystem(gym.Env[np.ndarray, np.ndarray]):
         self.num_internal_steps = int(self.step_size / self.internal_step_size)
         self.time = 0.0
         self.u_offset = u_offset
+        self.use_distance_reward = use_distance_reward
 
         if {"P_loads", "elec_price", "T_s_min", "T_r_min"} > sim_data.keys():
             raise ValueError(
@@ -188,15 +190,20 @@ class DHSSystem(gym.Env[np.ndarray, np.ndarray]):
                 dist = self.monitoring_distance_calculator.mahalanobis_distance(
                     self.observed_data, return_all=True
                 )
-                r = dist[0].item()
+                monitoring_distance = dist[0].item()
                 monitoring_state = self.observed_data
                 self.observed_data = None
             else:
-                r = 0.0
+                monitoring_distance = 0.0
                 monitoring_state = np.zeros(self.monitoring_state_size)
         else:
-            r = 0.0
+            monitoring_distance = 0.0
             monitoring_state = np.zeros(self.monitoring_state_size)
+
+        if self.use_distance_reward:
+            r = monitoring_distance
+        else:
+            r = economic_cost + constraint_violation_cost
 
         P_loads = self.P_loads[:, [self.step_counter]]
         elec_price = self.elec_price[self.step_counter]
@@ -232,6 +239,7 @@ class DHSSystem(gym.Env[np.ndarray, np.ndarray]):
             "T_r_min": T_r_min,
             "economic_cost": economic_cost,
             "constraint_violation_cost": constraint_violation_cost,
+            "monitoring_distance": monitoring_distance,
             "q_r_min": np.asarray(self.q_r_min),
             "efficiency": efficiency,
         }
