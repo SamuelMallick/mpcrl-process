@@ -10,7 +10,7 @@ class BaseConfig:
     sim_len = 288 * 200
     episodes = 1
     ts = 5.0 * 60
-    w = 20.0
+    w = 1.0
     with open("monitoring/monitoring_data_set.pkl", "rb") as f:
         monitoring_data_set = pickle.load(f)
     monitoring_window = 288
@@ -28,6 +28,7 @@ class BaseConfig:
     N = 72
     input_block = 1
     num_inputs = 3
+    mpc_monitoring_data_set = None
 
     # mhe
     open_loop = False
@@ -35,7 +36,7 @@ class BaseConfig:
 
     mpc_pars = {
         "T_ref": 75 * np.ones((5,)),
-        "w": w * np.ones((1,)),
+        "w": 100.0 * np.ones((1,)),
         "c_t": 1e1 * np.ones((1,)),
         "V0": np.zeros((1,)),
         "f": np.zeros((1 + 7 + 1,)),
