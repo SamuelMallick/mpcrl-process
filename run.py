@@ -88,8 +88,8 @@ if config.learn_type == "none":
         env=env,
         episodes=1,
         seed=1,
-        raises=True,
-        save_frequency=72,
+        raises=False,
+        save_frequency=288,
         save_location=f"results/{config.id}/{s}",
     )
 else:
