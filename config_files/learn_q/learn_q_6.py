@@ -14,6 +14,7 @@ class Config(BaseConfig):
 
         self.use_distance_reward = False
         self.u_offset = -1
+        self.mpc_pars["w"] = 20.0 * np.ones((1,))
 
         # learning
         self.learn_type = "q_learning"

@@ -10,7 +10,7 @@ from config_files.base import BaseConfig
 class Config(BaseConfig):
     def __init__(self):
         super().__init__()
-        self.id = "learn_q_5"
+        self.id = "learn_q_13"
 
         self.use_distance_reward = False
         self.u_offset = -1
@@ -18,7 +18,7 @@ class Config(BaseConfig):
 
         # learning
         self.learn_type = "q_learning"
-        self.learning_rate = 1e-3
+        self.learning_rate = 1e-2
         self.update_strategy = UpdateStrategy(288, hook="on_timestep_end", skip_first=1)
         self.optimizer = NewtonMethod(learning_rate=self.learning_rate)
         self.experience = ExperienceReplay(
@@ -34,4 +34,5 @@ class Config(BaseConfig):
             "Q",
             "T_lim_off",
             "q_lim_off",
+            "u_offset",
         ]
