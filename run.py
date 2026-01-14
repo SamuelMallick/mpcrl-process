@@ -151,7 +151,7 @@ else:
         env=env,
         episodes=config.episodes,
         seed=1,
-        raises=True,
+        raises=False,
         save_frequency=288,
         save_location=f"results/{config.id}/{s}",
         update_recorder=agent,
