@@ -32,7 +32,6 @@ class DHSSystem(gym.Env[np.ndarray, np.ndarray]):
         self.step_size = step_size
         self.num_internal_steps = int(self.step_size / self.internal_step_size)
         self.time = 0.0
-        self.u_offset = u_offset
         self.use_distance_reward = use_distance_reward
 
         if {"P_loads", "elec_price", "T_s_min", "T_r_min"} > sim_data.keys():
@@ -42,6 +41,10 @@ class DHSSystem(gym.Env[np.ndarray, np.ndarray]):
         self.P_loads, self.elec_price, self.T_s_min, self.T_r_min = (
             sim_data[k] for k in ["P_loads", "elec_price", "T_s_min", "T_r_min"]
         )
+        if isinstance(u_offset, float) or isinstance(u_offset, int):
+            self.u_offset = u_offset * np.ones((self.elec_price.shape[0],))
+        else:
+            self.u_offset = u_offset
 
         if monitoring_data_set is None:
             self.monitoring_distance_calculator = None
@@ -180,8 +183,6 @@ class DHSSystem(gym.Env[np.ndarray, np.ndarray]):
         elif action.shape[0] == 3:
             action = np.array([action[1] - action[0], action[2]])
 
-        action[1] += self.u_offset
-
         internal_step_counter = 0
         economic_cost, constraint_violation_cost = self.get_costs(self.y)
 
@@ -209,6 +210,10 @@ class DHSSystem(gym.Env[np.ndarray, np.ndarray]):
         elec_price = self.elec_price[self.step_counter]
         T_s_min = self.T_s_min[self.step_counter]
         T_r_min = self.T_r_min[self.step_counter]
+
+        offset = self.u_offset[self.step_counter]
+        action[1] += offset
+
         efficiency = -np.sum(P_loads) / self.y[19]
 
         u = np.vstack([action, P_loads])

@@ -40,4 +40,4 @@ class Config(BaseConfig):
 
         np.random.seed(1)
         load_scale = 0.8 * np.random.random((5, 1)) + 0.6
-        self.P_loads[:, 3*288:] *= load_scale
+        self.P_loads[:, 3 * 288 :] *= load_scale
