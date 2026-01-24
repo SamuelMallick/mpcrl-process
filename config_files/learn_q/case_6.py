@@ -10,7 +10,7 @@ from config_files.base import BaseConfig
 class Config(BaseConfig):
     def __init__(self):
         super().__init__()
-        self.id = "case_2"
+        self.id = "case_6"
 
         self.use_distance_reward = False
 
@@ -20,8 +20,8 @@ class Config(BaseConfig):
 
         # learning
         self.learn_type = "q_learning"
-        self.learning_rate = 1e0
-        self.update_strategy = UpdateStrategy(288, hook="on_timestep_end", skip_first=5)
+        self.learning_rate = 1e-1
+        self.update_strategy = UpdateStrategy(288, hook="on_timestep_end", skip_first=0)
         self.optimizer = NewtonMethod(learning_rate=self.learning_rate)
         self.experience = ExperienceReplay(
             maxlen=288, sample_size=288, include_latest=0
@@ -39,5 +39,5 @@ class Config(BaseConfig):
         ]
 
         np.random.seed(1)
-        load_scale = 0.8 * np.random.random((5, 1)) + 0.6
-        self.P_loads[:, 3 * 288 :] *= load_scale
+        load_scale = 1.4 * np.random.random((5, 1)) + 0.3
+        self.P_loads *= load_scale
