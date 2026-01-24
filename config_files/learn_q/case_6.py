@@ -10,13 +10,13 @@ from config_files.base import BaseConfig
 class Config(BaseConfig):
     def __init__(self):
         super().__init__()
-        self.id = "case_6_full"
+        self.id = "case_6_high"
 
         self.use_distance_reward = False
 
-        self.layers_path = "mpc/prediction_model/layers_full.mat"
-        self.input_scaler_path = "mpc/prediction_model/input_scaler_full.mat"
-        self.output_scaler_path = "mpc/prediction_model/output_scaler_full.mat"
+        self.layers_path = "mpc/prediction_model/layers_high.mat"
+        self.input_scaler_path = "mpc/prediction_model/input_scaler_high.mat"
+        self.output_scaler_path = "mpc/prediction_model/output_scaler_high.mat"
 
         # learning
         self.learn_type = "q_learning"
