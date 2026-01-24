@@ -10,18 +10,18 @@ from config_files.base import BaseConfig
 class Config(BaseConfig):
     def __init__(self):
         super().__init__()
-        self.id = "case_6"
+        self.id = "case_6_full"
 
         self.use_distance_reward = False
 
-        self.layers_path = "mpc/prediction_model/layers_low.mat"
-        self.input_scaler_path = "mpc/prediction_model/input_scaler_low.mat"
-        self.output_scaler_path = "mpc/prediction_model/output_scaler_low.mat"
+        self.layers_path = "mpc/prediction_model/layers_full.mat"
+        self.input_scaler_path = "mpc/prediction_model/input_scaler_full.mat"
+        self.output_scaler_path = "mpc/prediction_model/output_scaler_full.mat"
 
         # learning
         self.learn_type = "q_learning"
         self.learning_rate = 1e-1
-        self.update_strategy = UpdateStrategy(288, hook="on_timestep_end", skip_first=0)
+        self.update_strategy = UpdateStrategy(288, hook="on_timestep_end", skip_first=5)
         self.optimizer = NewtonMethod(learning_rate=self.learning_rate)
         self.experience = ExperienceReplay(
             maxlen=288, sample_size=288, include_latest=0
