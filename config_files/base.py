@@ -25,7 +25,7 @@ class BaseConfig:
     input_scaler_path = "mpc/prediction_model/input_scaler_full.mat"
     output_scaler_path = "mpc/prediction_model/output_scaler_full.mat"
     gamma = 1
-    N = 9
+    N = 72
     input_block = 1
     num_inputs = 3
     mpc_monitoring_data_set = None
