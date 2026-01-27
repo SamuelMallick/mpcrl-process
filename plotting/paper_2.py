@@ -88,21 +88,38 @@ def plot_mal_distance(data: dict, max_len: int = 100000000):
     fig, ax = plt.subplots(1, 2, sharex=False)
     fig.suptitle("Features")
     ax[0].plot(
-        monitoring_data_set[:, 7], monitoring_data_set[:, 5], "x", color="blue", alpha=0.5, zorder=1
+        monitoring_data_set[:, 7],
+        monitoring_data_set[:, 5],
+        "x",
+        color="blue",
+        alpha=0.5,
+        zorder=1,
     )
     ax[1].plot(
-        monitoring_data_set[:, 3], monitoring_data_set[:, 2], "x", color="blue", alpha=0.5, zorder=1
+        monitoring_data_set[:, 3],
+        monitoring_data_set[:, 2],
+        "x",
+        color="blue",
+        alpha=0.5,
+        zorder=1,
     )
     win = 40
-    red_green = LinearSegmentedColormap.from_list(
-        "red_green", ["red", "green"]
-    )
-    start = int(3.5*288)
+    red_green = LinearSegmentedColormap.from_list("red_green", ["red", "green"])
+    start = int(3.5 * 288)
     fin = max_len
-    day_averages = np.asarray([np.mean(X[start + i*(win//2):start + i*(win//2) + win], axis=0) for i in range((fin-start)//(win//2))])
+    day_averages = np.asarray(
+        [
+            np.mean(X[start + i * (win // 2) : start + i * (win // 2) + win], axis=0)
+            for i in range((fin - start) // (win // 2))
+        ]
+    )
     idx = np.arange(day_averages.shape[0])
-    ax[0].scatter(day_averages[:, 7], day_averages[:, 5], c=idx, cmap="inferno", alpha=1, zorder=2)
-    ax[1].scatter(day_averages[:, 3], day_averages[:, 2], c=idx, cmap="inferno", alpha=1, zorder=2)
+    ax[0].scatter(
+        day_averages[:, 7], day_averages[:, 5], c=idx, cmap="inferno", alpha=1, zorder=2
+    )
+    ax[1].scatter(
+        day_averages[:, 3], day_averages[:, 2], c=idx, cmap="inferno", alpha=1, zorder=2
+    )
 
     ax[0].set_xlabel("sigma 8")
     ax[1].set_xlabel("sigma 4")

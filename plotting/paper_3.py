@@ -3,13 +3,20 @@ import pickle
 import sys
 
 import matplotlib.pyplot as plt
+
 sys.path.append(os.getcwd())
 from misc.tikz import save2tikz
+
 
 def basic_plot(data: dict, max_len: int = 100000000):
     plot_ep = 0
     # sim data plot
-    P_loads, elec_price, T_s_min, T_r_min = data["P_loads"][plot_ep, :max_len], data["elec_price"][plot_ep, :max_len], data["T_s_min"][plot_ep, :max_len], data["T_r_min"][plot_ep, :max_len]
+    P_loads, elec_price, T_s_min, T_r_min = (
+        data["P_loads"][plot_ep, :max_len],
+        data["elec_price"][plot_ep, :max_len],
+        data["T_s_min"][plot_ep, :max_len],
+        data["T_r_min"][plot_ep, :max_len],
+    )
     _, ax = plt.subplots(3, 1, sharex=True)
     ax[0].plot(P_loads, label=["P1", "P2", "P3", "P4", "P5"])
     ax[1].plot(elec_price, label="Electricity Price")

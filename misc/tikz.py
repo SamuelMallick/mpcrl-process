@@ -1,7 +1,5 @@
 import matplotlib as mpl
-
 import tikzplotlib as tikz_lib  # recommended to install tikzplotlib-patched
-
 from matplotlib.figure import Figure
 
 # monkey patching to fix some issues with tikzplotlib

@@ -13,8 +13,8 @@ from monitoring.mahalanobis_distance import MahalanobisDistance
 def basic_plot(data: dict, max_len: int = 100000000):
     # sim data plot
 
-    skip=10
-    
+    skip = 10
+
     # outputs and inputs plot
     u, y, T_s_min, T_r_min, q_r_min = (
         data["u"],
@@ -35,10 +35,14 @@ def basic_plot(data: dict, max_len: int = 100000000):
 
     _, ax = plt.subplots(3, 1, sharex=True)
     ax[0].plot(T_s_min[:max_len], "black", label="_T_s_min")
-    ax[0].plot(np.arange(0, max_len, skip), Ts[0:max_len:skip], label=["T1", "T2", "T3", "T4", "T5"])
+    ax[0].plot(
+        np.arange(0, max_len, skip),
+        Ts[0:max_len:skip],
+        label=["T1", "T2", "T3", "T4", "T5"],
+    )
 
     ax[1].plot(q_r_min[:max_len], "black", label="_q_r_min")
-    ax[1].plot(np.arange(0, max_len, skip),qr[0:max_len:skip], label="qr")
+    ax[1].plot(np.arange(0, max_len, skip), qr[0:max_len:skip], label="qr")
 
     window_length = 144
     with open(f"monitoring/monitoring_data_set_{window_length}.pkl", "rb") as f:
@@ -99,8 +103,12 @@ def basic_plot(data: dict, max_len: int = 100000000):
 
     X = np.vstack((mean, var)).T
     dists = monitoring_distance_calculator.mahalanobis_distance(X, return_all=True)[0]
-    
-    ax[2].plot(np.arange(window_length, max_len, skip), dists[:max_len-window_length:skip], label="Mahalanobis distance")
+
+    ax[2].plot(
+        np.arange(window_length, max_len, skip),
+        dists[: max_len - window_length : skip],
+        label="Mahalanobis distance",
+    )
     ax[2].axhline(15.51, color="red", label="Threshold")
     # ax[2].set_yscale("log")
 
@@ -110,7 +118,7 @@ def basic_plot(data: dict, max_len: int = 100000000):
 
     # parameters plot
     updates = data["agent_updates_history"]
-    updates = {k: v for k, v in updates.items() if k in ['f', 'Q']}
+    updates = {k: v for k, v in updates.items() if k in ["f", "Q"]}
     _, ax = plt.subplots(len(updates), 1, sharex=True)
     if len(updates) == 1:
         ax = [ax]

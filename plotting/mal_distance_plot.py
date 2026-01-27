@@ -86,22 +86,40 @@ def plot_mal_distance(data: dict, max_len: int = 100000000):
     fig, ax = plt.subplots(3, 2, sharex=False)
     fig.suptitle("Features")
     ax[0, 0].plot(
-        monitoring_data_set[:max_len, 3], monitoring_data_set[:max_len, 0], "o", color="blue"
+        monitoring_data_set[:max_len, 3],
+        monitoring_data_set[:max_len, 0],
+        "o",
+        color="blue",
     )
     ax[1, 0].plot(
-        monitoring_data_set[:max_len, 3], monitoring_data_set[:max_len, 1], "o", color="blue"
+        monitoring_data_set[:max_len, 3],
+        monitoring_data_set[:max_len, 1],
+        "o",
+        color="blue",
     )
     ax[2, 0].plot(
-        monitoring_data_set[:max_len, 3], monitoring_data_set[:max_len, 2], "o", color="blue"
+        monitoring_data_set[:max_len, 3],
+        monitoring_data_set[:max_len, 2],
+        "o",
+        color="blue",
     )
     ax[0, 1].plot(
-        monitoring_data_set[:max_len, 7], monitoring_data_set[:max_len, 4], "o", color="blue"
+        monitoring_data_set[:max_len, 7],
+        monitoring_data_set[:max_len, 4],
+        "o",
+        color="blue",
     )
     ax[1, 1].plot(
-        monitoring_data_set[:max_len, 7], monitoring_data_set[:max_len, 5], "o", color="blue"
+        monitoring_data_set[:max_len, 7],
+        monitoring_data_set[:max_len, 5],
+        "o",
+        color="blue",
     )
     ax[2, 1].plot(
-        monitoring_data_set[:max_len, 7], monitoring_data_set[:max_len, 6], "o", color="blue"
+        monitoring_data_set[:max_len, 7],
+        monitoring_data_set[:max_len, 6],
+        "o",
+        color="blue",
     )
     ax[0, 0].plot(X[:max_len, 3], X[:max_len, 0], "o", color="red", alpha=0.5)
     ax[1, 0].plot(X[:max_len, 3], X[:max_len, 1], "o", color="red", alpha=0.5)
