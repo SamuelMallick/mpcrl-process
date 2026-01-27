@@ -19,8 +19,7 @@ class Config(BaseConfig):
         self.output_scaler_path = "mpc/prediction_model/output_scaler_full.mat"
 
         # learning
-        self.learn_type = "q_learning"
-        self.learning_rate = 0
+        self.learn_type = "none"
 
         np.random.seed(1)
         load_scale = 1.2 * np.random.random((5, 1)) + 0.4
