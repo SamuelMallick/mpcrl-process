@@ -45,7 +45,7 @@ def basic_plot(data: dict, max_len: int = 100000000):
     ax[1].plot(np.arange(0, max_len, skip), qr[0:max_len:skip], label="qr")
 
     window_length = 144
-    with open(f"monitoring/monitoring_data_set_{window_length}.pkl", "rb") as f:
+    with open(f"monitoring/monitoring_data_set.pkl", "rb") as f:
         monitoring_data_set = pickle.load(f)
 
     monitoring_distance_calculator = MahalanobisDistance(
