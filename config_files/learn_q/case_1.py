@@ -10,13 +10,12 @@ from config_files.base import BaseConfig
 class Config(BaseConfig):
     def __init__(self):
         super().__init__()
-        self.id = "case_1"
+        self.id = "case_3"
 
         self.use_distance_reward = False
-
-        self.layers_path = "mpc/prediction_model/layers_low.mat"
-        self.input_scaler_path = "mpc/prediction_model/input_scaler_low.mat"
-        self.output_scaler_path = "mpc/prediction_model/output_scaler_low.mat"
+        self.u_offset = np.zeros((self.sim_len,))
+        self.u_offset[3 * 288 :] = -1
+        self.mpc_pars["w"] = 20.0 * np.ones((1,))
 
         # learning
         self.learn_type = "q_learning"
@@ -37,7 +36,3 @@ class Config(BaseConfig):
             "T_lim_off",
             "q_lim_off",
         ]
-
-        np.random.seed(1)
-        load_scale = 0.8 * np.random.random((5, 1)) + 0.6
-        self.P_loads[:, 3 * 288 :] *= load_scale

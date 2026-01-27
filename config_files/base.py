@@ -11,7 +11,7 @@ class BaseConfig:
     episodes = 1
     ts = 5.0 * 60
     w = 1.0
-    with open("monitoring/monitoring_data_set_144.pkl", "rb") as f:
+    with open("monitoring/monitoring_data_set.pkl", "rb") as f:
         monitoring_data_set = pickle.load(f)
     monitoring_window = 144
     u_offset = 0

@@ -3,7 +3,7 @@ import pickle
 import matplotlib.pyplot as plt
 import numpy as np
 
-with open("results/generate_data/2026-01-13_14-30_ep0_step10080.pkl", "rb") as f:
+with open("monitoring/2026-01-13_14-30_ep0_step10080.pkl", "rb") as f:
     data = pickle.load(f)
 
 ep = 0
