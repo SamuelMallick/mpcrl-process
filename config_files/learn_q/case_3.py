@@ -10,7 +10,7 @@ from config_files.base import BaseConfig
 class Config(BaseConfig):
     def __init__(self):
         super().__init__()
-        self.id = "case_2"
+        self.id = "case_3"
 
         self.use_distance_reward = False
 
@@ -39,5 +39,5 @@ class Config(BaseConfig):
         ]
 
         np.random.seed(1)
-        load_scale = 0.8 * np.random.random((5, 1)) + 0.6
+        load_scale = 1.2 * np.random.random((5, 1)) + 0.4
         self.P_loads[:, 3 * 288 :] *= load_scale

@@ -10,7 +10,7 @@ from config_files.base import BaseConfig
 class Config(BaseConfig):
     def __init__(self):
         super().__init__()
-        self.id = "case_3"
+        self.id = "case_1"
 
         self.use_distance_reward = False
         self.u_offset = np.zeros((self.sim_len,))
