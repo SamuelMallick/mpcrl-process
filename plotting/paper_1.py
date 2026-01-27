@@ -6,10 +6,39 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 sys.path.append(os.getcwd())
+from misc.tikz import save2tikz
 from monitoring.mahalanobis_distance import MahalanobisDistance
 
 
-def plot_mal_distance(data: dict, max_len: int = 100000000):
+def basic_plot(data: dict, max_len: int = 100000000):
+    # sim data plot
+
+    skip=10
+    
+    # outputs and inputs plot
+    u, y, T_s_min, T_r_min, q_r_min = (
+        data["u"],
+        data["y"],
+        data["T_s_min"],
+        data["T_r_min"],
+        data["q_r_min"],
+    )
+    u, y, T_s_min, T_r_min, q_r_min = (
+        u.reshape(-1),
+        y.reshape(-1, y.shape[2]),
+        T_s_min.reshape(-1),
+        T_r_min.reshape(-1),
+        q_r_min.reshape(-1),
+    )
+    Ts = y[:, [0, 3, 6, 9, 12]]
+    qr = y[:, 16]
+
+    _, ax = plt.subplots(3, 1, sharex=True)
+    ax[0].plot(T_s_min[:max_len], "black", label="_T_s_min")
+    ax[0].plot(np.arange(0, max_len, skip), Ts[0:max_len:skip], label=["T1", "T2", "T3", "T4", "T5"])
+
+    ax[1].plot(q_r_min[:max_len], "black", label="_q_r_min")
+    ax[1].plot(np.arange(0, max_len, skip),qr[0:max_len:skip], label="qr")
 
     window_length = 144
     with open(f"monitoring/monitoring_data_set_{window_length}.pkl", "rb") as f:
@@ -25,7 +54,7 @@ def plot_mal_distance(data: dict, max_len: int = 100000000):
         ],
     )
 
-    skip_first = 10
+    skip_first = 0
     P_loads = data["P_loads"][:, skip_first:]
     y = data["y"][:, skip_first:-1]
     r = data["rewards"][:, skip_first:]
@@ -70,45 +99,27 @@ def plot_mal_distance(data: dict, max_len: int = 100000000):
 
     X = np.vstack((mean, var)).T
     dists = monitoring_distance_calculator.mahalanobis_distance(X, return_all=True)[0]
+    
+    ax[2].plot(np.arange(window_length, max_len, skip), dists[:max_len-window_length:skip], label="Mahalanobis distance")
+    ax[2].axhline(15.51, color="red", label="Threshold")
+    # ax[2].set_yscale("log")
 
-    skip_first_for_plot = 10
-    dists = dists[skip_first_for_plot:]
-    r = r[skip_first_for_plot:]
-    monitoring_data_set = monitoring_data_set[skip_first_for_plot:]
-    X = X[skip_first_for_plot:]
+    # ax[0].legend()
 
-    _, ax = plt.subplots(1, 1, sharex=True)
-    ax.plot(dists[:max_len], "--", label="post")
-    ax.axhline(12, color="red", linestyle=":", label="threshold")
-    # ax.set_yscale("log")
-    # ax.plot(r, "o", label="during")
+    save2tikz(plt.gcf())
 
-    fig, ax = plt.subplots(3, 2, sharex=False)
-    fig.suptitle("Features")
-    ax[0, 0].plot(
-        monitoring_data_set[:max_len, 3], monitoring_data_set[:max_len, 0], "o", color="blue"
-    )
-    ax[1, 0].plot(
-        monitoring_data_set[:max_len, 3], monitoring_data_set[:max_len, 1], "o", color="blue"
-    )
-    ax[2, 0].plot(
-        monitoring_data_set[:max_len, 3], monitoring_data_set[:max_len, 2], "o", color="blue"
-    )
-    ax[0, 1].plot(
-        monitoring_data_set[:max_len, 7], monitoring_data_set[:max_len, 4], "o", color="blue"
-    )
-    ax[1, 1].plot(
-        monitoring_data_set[:max_len, 7], monitoring_data_set[:max_len, 5], "o", color="blue"
-    )
-    ax[2, 1].plot(
-        monitoring_data_set[:max_len, 7], monitoring_data_set[:max_len, 6], "o", color="blue"
-    )
-    ax[0, 0].plot(X[:max_len, 3], X[:max_len, 0], "o", color="red", alpha=0.5)
-    ax[1, 0].plot(X[:max_len, 3], X[:max_len, 1], "o", color="red", alpha=0.5)
-    ax[2, 0].plot(X[:max_len, 3], X[:max_len, 2], "o", color="red", alpha=0.5)
-    ax[0, 1].plot(X[:max_len, 7], X[:max_len, 4], "o", color="red", alpha=0.5)
-    ax[1, 1].plot(X[:max_len, 7], X[:max_len, 5], "o", color="red", alpha=0.5)
-    ax[2, 1].plot(X[:max_len, 7], X[:max_len, 6], "o", color="red", alpha=0.5)
+    # parameters plot
+    updates = data["agent_updates_history"]
+    updates = {k: v for k, v in updates.items() if k in ['f', 'Q']}
+    _, ax = plt.subplots(len(updates), 1, sharex=True)
+    if len(updates) == 1:
+        ax = [ax]
+    for i, (name, vals) in enumerate(updates.items()):
+        val = np.asarray(vals)
+        val = val.reshape(val.shape[0], -1)
+        ax[i].plot(val[:8])
+        ax[i].set_ylabel(name)
+
     plt.show()
 
 
@@ -116,14 +127,12 @@ if __name__ == "__main__":
     if len(sys.argv) > 1:
         file_name = sys.argv[1]
         with open(file_name, "rb") as f:
-            data = pickle.load(f)
+            sample_data = pickle.load(f)
     else:
-        with open(
-            "results/learn_bo_u_offset/2026-01-06_16-32_ep39_step288.pkl", "rb"
-        ) as f:
-            data = pickle.load(f)
+        with open("results/learn_q_2/2026-01-12_16-37_ep0_step5472.pkl", "rb") as f:
+            sample_data = pickle.load(f)
     if len(sys.argv) > 2:
         max_len = int(sys.argv[2])
-        plot_mal_distance(data, max_len=max_len)
+        basic_plot(sample_data, max_len=max_len)
     else:
-        plot_mal_distance(data)
+        basic_plot(sample_data, 4000)
