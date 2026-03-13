@@ -41,6 +41,20 @@ def basic_plot(data: dict, max_len: int = 100000000):
         label=["T1", "T2", "T3", "T4", "T5"],
     )
 
+    for e in [288 * 6, 288 * 7, 288 * 8, 288 *9]:
+    # plot update markers
+        ax[0].annotate(
+            '',                       # no text
+            xy=(e, 80),                # arrow tip (on top of plot)
+            xytext=(e, 85),          # arrow start (above)
+            arrowprops=dict(
+                arrowstyle='-|>',
+                color='red',
+                lw=1.5,
+            )
+        )
+        ax[0].text(e, 85, "t")
+
     ax[1].plot(q_r_min[:max_len], "black", label="_q_r_min")
     ax[1].plot(np.arange(0, max_len, skip), qr[0:max_len:skip], label="qr")
 

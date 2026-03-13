@@ -37,18 +37,19 @@ def basic_plot(data_1: dict, data_2: dict, max_lens: list[int] = [100000000, 100
         )
         Ts = y[:, [0, 3, 6, 9, 12]]
         qr = y[:, 16]
-
-        ax[0].plot(x_axis, T_s_min[:max_len:skip], "black", label="_T_s_min")
+    
+        shift = 20
+        ax[0].plot(x_axis, T_s_min[shift:max_len+shift:skip], "black", label="_T_s_min")
         for T, c in zip(Ts.T, colors):
             ax[0].plot(
                 x_axis,
-                T[:max_len:skip],
+                T[shift:max_len+shift:skip],
                 label=["T1", "T2", "T3", "T4", "T5"],
                 color=c,
         )
 
-        ax[1].plot(x_axis, q_r_min[:max_len:skip], "black", label="_q_r_min")
-        ax[1].plot(x_axis, qr[0:max_len:skip], label="qr", color="C0")
+        ax[1].plot(x_axis, q_r_min[shift:max_len+shift:skip], "black", label="_q_r_min")
+        ax[1].plot(x_axis, qr[shift:max_len+shift:skip], label="qr", color="C0")
 
         window_length = 144
         with open(f"monitoring/monitoring_data_set.pkl", "rb") as f:
@@ -114,16 +115,19 @@ def basic_plot(data_1: dict, data_2: dict, max_lens: list[int] = [100000000, 100
         x_axis = np.arange(start, start + max_len - window_length, skip)
         ax[2].plot(
             x_axis,
-            dists[: max_len - window_length : skip],
+            dists[shift: max_len - window_length + shift : skip],
             label="Mahalanobis distance",
             color=colors[0],
         )
         ax[2].axhline(15.51, color="black", label="Threshold")
         # ax[2].set_yscale("log")
 
-        # ax[0].legend()
+    # ax[0].legend()
+    ax[0].axvline(max_lens[0], color="red")
+    ax[1].axvline(max_lens[0], color="red")
+    ax[2].axvline(max_lens[0], color="red")
 
-        # save2tikz(plt.gcf())
+    save2tikz(plt.gcf())
 
     plt.show()
 
@@ -134,10 +138,12 @@ if __name__ == "__main__":
         with open(file_name, "rb") as f:
             sample_data = pickle.load(f)
     else:
-        with open("results/learn_q_2/2026-01-12_16-37_ep0_step5472.pkl", "rb") as f:
-            sample_data = pickle.load(f)
+        with open("results/case_3/2026-01-27_12-03_ep0_step11520.pkl", "rb") as f:
+            sample_data_1 = pickle.load(f)
+        with open("results/case_4/2026-01-27_14-05_ep0_step12672.pkl", "rb") as f:
+            sample_data_2 = pickle.load(f)
     if len(sys.argv) > 2:
         max_len = int(sys.argv[2])
         basic_plot(sample_data, max_len=max_len)
     else:
-        basic_plot(sample_data, sample_data, [288*3, 288*3])
+        basic_plot(sample_data_1, sample_data_2, [2880, 288*5])
